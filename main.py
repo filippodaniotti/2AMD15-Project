@@ -23,7 +23,11 @@ def q1a(spark_context: SparkContext, on_server: bool) -> DataFrame:
 
     # TODO: Implement Q1a here by creating a Dataset of DataFrame out of the file at {@code vectors_file_path}.
 
-    return None
+    with open(vectors_file_path) as f:
+        lines = [line.split(',') for line in f.readlines()]
+        return spark_session.createDataFrame(
+            [tuple([line[0]] + line[1].split(';')) for line in lines]
+        )
 
 
 def q1b(spark_context: SparkContext, on_server: bool) -> RDD:
@@ -31,7 +35,11 @@ def q1b(spark_context: SparkContext, on_server: bool) -> RDD:
 
     # TODO: Implement Q1b here by creating an RDD out of the file at {@code vectors_file_path}.
 
-    return None
+    with open(vectors_file_path) as f:
+        lines = [line.split(',') for line in f.readlines()]
+        return spark_context.parallelize(
+            [[line[0]] + line[1].split(';') for line in lines]
+        )
 
 
 def q2(spark_context: SparkContext, data_frame: DataFrame):
