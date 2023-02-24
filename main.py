@@ -1,6 +1,8 @@
 from pyspark import SparkConf, SparkContext, RDD
 from pyspark.sql import SparkSession, DataFrame
 
+from question2 import question2
+
 
 def get_spark_context(on_server) -> SparkContext:
     spark_conf = SparkConf().setAppName("2AMD15")
@@ -43,8 +45,7 @@ def q1b(spark_context: SparkContext, on_server: bool) -> RDD:
 
 
 def q2(spark_context: SparkContext, data_frame: DataFrame):
-    # TODO: Imlement Q2 here
-    return
+    question2(data_frame)
 
 
 def q3(spark_context: SparkContext, rdd: RDD):
