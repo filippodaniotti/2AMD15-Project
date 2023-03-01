@@ -1,14 +1,19 @@
+import time
 from typing import List
+
 from pyspark import StorageLevel
 from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
-from matplotlib import pyplot as plt
 from pyspark.sql.types import ArrayType, FloatType
+
+from matplotlib import pyplot as plt
 
 import statistics
 
 
 def question2(df: DataFrame):
+    start = time.perf_counter()
+
     variance_df = calc_variances(df)
 
     t_values = [20.0, 50.0, 310.0, 360.0, 410.0]
@@ -16,6 +21,7 @@ def question2(df: DataFrame):
 
     for t, res in zip(t_values, results):
         print(f"τ={t}: {res}")
+    print(f"seconds to calculate: {start - time.perf_counter():0.2f}")
 
     plot(list(map(str, t_values)), results)
 
@@ -44,7 +50,7 @@ def calc_variances(df: DataFrame) -> DataFrame:
         .withColumn(
             'var',
             var_udf(F.col('AGG'))
-        ).persist(StorageLevel.MEMORY_ONLY)
+        ).persist(StorageLevel.DISK_ONLY)
 
 
 def query(df: DataFrame, t: float) -> int:
