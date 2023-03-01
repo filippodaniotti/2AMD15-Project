@@ -5,7 +5,10 @@ from question2 import question2
 
 
 def get_spark_context(on_server) -> SparkContext:
-    spark_conf = SparkConf().setAppName("2AMD15")
+    spark_conf = SparkConf()\
+        .setAppName("2AMD15")\
+        .set("spark.executor.memory", "2g")\
+        .set("spark.driver.memory", "3g")
     if not on_server:
         spark_conf = spark_conf.setMaster("local[*]")
     spark_context = SparkContext.getOrCreate(spark_conf)
