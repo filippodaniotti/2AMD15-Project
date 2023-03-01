@@ -11,8 +11,9 @@ def get_spark_context(on_server) -> SparkContext:
     spark_context = SparkContext.getOrCreate(spark_conf)
 
     if on_server:
-        # TODO: You may want to change ERROR to WARN to receive more info. For larger data sets, to not set the
-        # log level to anything below WARN, Spark will print too much information.
+        # TODO: You may want to change ERROR to WARN to receive more info.
+        # For larger data sets, to not set the log level to anything below WARN,
+        # Spark will print too much information.
         spark_context.setLogLevel("ERROR")
 
     return spark_context
@@ -26,9 +27,10 @@ def q1a(spark_context: SparkContext, on_server: bool) -> DataFrame:
     # TODO: Implement Q1a here by creating a Dataset of DataFrame out of the file at {@code vectors_file_path}.
 
     with open(vectors_file_path) as f:
-        lines = [line.split(',') for line in f.readlines()]
+        lines = [line.strip().split(',') for line in f.readlines()]
         return spark_session.createDataFrame(
-            [tuple([line[0]] + line[1].split(';')) for line in lines]
+            [tuple([line[0]] + [float(x) for x in line[1].split(';')])
+             for line in lines]
         )
 
 
@@ -38,9 +40,10 @@ def q1b(spark_context: SparkContext, on_server: bool) -> RDD:
     # TODO: Implement Q1b here by creating an RDD out of the file at {@code vectors_file_path}.
 
     with open(vectors_file_path) as f:
-        lines = [line.split(',') for line in f.readlines()]
+        lines = [line.strip().split(',') for line in f.readlines()]
         return spark_context.parallelize(
-            [[line[0]] + line[1].split(';') for line in lines]
+            [[line[0]] + [float(x) for x in line[1].split(';')]
+             for line in lines]
         )
 
 
