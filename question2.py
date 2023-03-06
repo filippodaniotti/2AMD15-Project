@@ -7,11 +7,8 @@ from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
 from pyspark.sql.types import ArrayType, FloatType
 
-can_plot = True
-try:
-    from matplotlib import pyplot as plt
-except ImportError:
-    can_plot = False
+    
+from src.evaluation import plot, is_evaluation_enabled
 
 
 def question2(df: DataFrame):
@@ -27,7 +24,7 @@ def question2(df: DataFrame):
     print(f"seconds to calculate: {time.perf_counter() - start:0.2f}")
     print(f"ids for τ-value 20: {results[0]}")
 
-    if can_plot:
+    if is_evaluation_enabled():
         plot(list(map(str, t_values)), [len(row) for row in results])
 
 
@@ -43,15 +40,44 @@ def calc_variances(df: DataFrame) -> DataFrame:
 
     df_with_arr = df.withColumn('ARR', F.array(
         df.columns[1:])).select('_1', 'ARR')
+    # return df_with_arr \
+    #     .crossJoin(df_with_arr.selectExpr('_1 as _2', 'ARR as ARR2'))\
+    #     .filter('_1 != _2')\
+    #     .withColumn('ARR_AGG_1', agg_udf(F.array('ARR', 'ARR2')))\
+    #     .select('_1', '_2', 'ARR_AGG_1')\
+    #     .crossJoin(df_with_arr.selectExpr('_1 as _3', 'ARR as ARR3'))\
+    #     .filter('_1 != _3')\
+    #     .withColumn('full_id', F.sort_array(F.array('_1', '_2', '_3')))\
+    #     .drop_duplicates(['full_id'])\
+    #     .withColumn('AGG', agg_udf(F.array('ARR_AGG_1', 'ARR3')))\
+    #     .withColumn(
+    #         'var',
+    #         var_udf(F.col('AGG'))
+    #     ).select('full_id', 'var')\
+    #     .persist(StorageLevel.MEMORY_ONLY)
+    # return df_with_arr \
+    #     .crossJoin(df_with_arr.toDF('_2', 'ARR2'))\
+    #     .filter('_1 != _2')\
+    #     .withColumn('ARR_AGG_1', agg_udf(F.array('ARR', 'ARR2')))\
+    #     .select('_1', '_2', 'ARR_AGG_1')\
+    #     .crossJoin(df_with_arr.toDF('_3', 'ARR3'))\
+    #     .filter('_1 != _3')\
+    #     .withColumn('full_id', F.sort_array(F.array('_1', '_2', '_3')))\
+    #     .drop_duplicates(['full_id'])\
+    #     .withColumn('AGG', agg_udf(F.array('ARR_AGG_1', 'ARR3')))\
+    #     .withColumn(
+    #         'var',
+    #         var_udf(F.col('AGG'))
+    #     ).select('full_id', 'var')\
+    #     .persist(StorageLevel.MEMORY_ONLY)
     return df_with_arr \
-        .crossJoin(df_with_arr.selectExpr('_1 as _2', 'ARR as ARR2'))\
-        .filter('_1 != _2')\
+        .crossJoin(df_with_arr.toDF('_2', 'ARR2'))\
+        .filter('_1 < _2')\
         .withColumn('ARR_AGG_1', agg_udf(F.array('ARR', 'ARR2')))\
         .select('_1', '_2', 'ARR_AGG_1')\
-        .crossJoin(df_with_arr.selectExpr('_1 as _3', 'ARR as ARR3'))\
-        .filter('_1 != _3')\
-        .withColumn('full_id', F.sort_array(F.array('_1', '_2', '_3')))\
-        .drop_duplicates(['full_id'])\
+        .crossJoin(df_with_arr.toDF('_3', 'ARR3'))\
+        .filter('_2 < _3')\
+        .withColumn('full_id', F.array('_1', '_2', '_3'))\
         .withColumn('AGG', agg_udf(F.array('ARR_AGG_1', 'ARR3')))\
         .withColumn(
             'var',
@@ -59,28 +85,9 @@ def calc_variances(df: DataFrame) -> DataFrame:
         ).select('full_id', 'var')\
         .persist(StorageLevel.MEMORY_ONLY)
 
-
 def query(df: DataFrame, t: float) -> List[str]:
     return [
         '-'.join(row.full_id) for row in df.filter(f'var <= {t}')
         .select('full_id')
         .collect()
     ]
-
-
-def plot(t_values: List[str], results: List[int]):
-    ax = plt.axes()
-    ax.bar(t_values, results, width=0.4)
-
-    ax.set_xlabel("τ values")
-    ax.set_ylabel("triples found")
-    ax.set_title("Triples found as τ increases")
-
-    for rect, label in zip(ax.patches, results):
-        height = rect.get_height()
-        ax.text(
-            rect.get_x() + rect.get_width() / 2,
-            height + 5, str(label), ha="center", va="bottom"
-        )
-
-    plt.savefig('question2.png')
