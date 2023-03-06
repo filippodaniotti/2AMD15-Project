@@ -1,5 +1,5 @@
 import time
-import statistics
+from statistics import variance
 from typing import List
 
 from pyspark import StorageLevel
@@ -7,9 +7,7 @@ from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
 from pyspark.sql.types import ArrayType, FloatType
 
-    
 from src.evaluation import plot, is_evaluation_enabled
-
 
 def question2(df: DataFrame):
     start = time.perf_counter()
@@ -23,36 +21,24 @@ def question2(df: DataFrame):
     for t, res in zip(t_values, [len(row) for row in results]):
         print(f"τ={t}: {res}")
     print(f"seconds to calculate: {time.perf_counter() - start:0.2f}")
-    # with open("triplets.txt", "w") as f:
-    #     for t, r in zip(t_values, results):
-    #         f.write(f"ids for τ-value {t}\n")
-    #         for l in r:
-    #             f.write(f"\t{l}\n")
-        # for t, r in zip(t_values, results):
-        #     f.write(f"ids for τ-value {t}: {r}")
 
     if is_evaluation_enabled():
         plot(list(map(str, t_values)), [len(row) for row in results])
 
 
 def calc_variances(df: DataFrame) -> DataFrame:
-    def calculate_var(row):
-        return statistics.variance(row)
+    var_udf = F.udf(lambda row: variance(row), 'float')
+    agg_udf = F.udf(
+        lambda row: [x+y for x, y in zip(row[0], row[1])], 
+        ArrayType(FloatType())
+    )
 
-    def calculate_agg(row):
-        return [x+y for x, y in zip(row[0], row[1])]
-
-    var_udf = F.udf(calculate_var, 'float')
-    agg_udf = F.udf(calculate_agg, ArrayType(FloatType()))
-
-    df_with_arr = df.withColumn('ARR', F.array(
-        df.columns[1:])).select('_1', 'ARR')
-
+    df_with_arr = df.withColumn('ARR', F.array(df.columns[1:])).select('_1', 'ARR')
+    
     return df_with_arr \
         .crossJoin(df_with_arr.selectExpr('_1 as _2', 'ARR as ARR2'))\
         .filter('_1 < _2')\
         .withColumn('ARR_AGG_1', agg_udf(F.array('ARR', 'ARR2')))\
-        .select('_1', '_2', 'ARR_AGG_1')\
         .crossJoin(df_with_arr.selectExpr('_1 as _3', 'ARR as ARR3'))\
         .filter('_2 < _3')\
         .withColumn('full_id', F.array('_1', '_2', '_3'))\
