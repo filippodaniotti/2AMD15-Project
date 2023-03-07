@@ -1,6 +1,6 @@
 from typing import List
 
-from .configuration import ENABLE_EVALUATION
+from configuration import ENABLE_EVALUATION
 
 if ENABLE_EVALUATION:
     try:

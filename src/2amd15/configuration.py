@@ -10,4 +10,3 @@ if platform.system() == "Windows":
 
 ENABLE_EVALUATION = True
 
-

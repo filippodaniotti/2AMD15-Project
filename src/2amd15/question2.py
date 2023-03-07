@@ -7,7 +7,7 @@ from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
 from pyspark.sql.types import ArrayType, FloatType
 
-from src.evaluation import plot, is_evaluation_enabled
+from evaluation import plot, is_evaluation_enabled
 
 def question2(df: DataFrame):
     start = time.perf_counter()
