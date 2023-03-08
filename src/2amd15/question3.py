@@ -29,8 +29,8 @@ def question3(rdd: RDD):
     t410 = variance410.count()
     variance410.unpersist()
 
-    print(f"τ=20 triples: {triples20}")
-    print(f"τ=20: {t20}")
-    print(f"τ=410: {t410}")
+    print(f">> τ=20 triples: {triples20}")
+    print(f">> τ=20: {t20}")
+    print(f">> τ=410: {t410}")
 
-    print(f"seconds to calculate: {time.perf_counter() - start:0.2f}")
+    print(f">> seconds to calculate: {time.perf_counter() - start:0.2f}")
