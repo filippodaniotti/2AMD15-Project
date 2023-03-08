@@ -174,3 +174,5 @@ poetry.toml
 
 ./.vscode
 app.zip
+data.zip
+vectors.csv
