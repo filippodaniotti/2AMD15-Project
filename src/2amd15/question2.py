@@ -13,16 +13,18 @@ from evaluation import plot, is_evaluation_enabled
 def question2(df: DataFrame):
     start = time.perf_counter()
 
-    variance_df = calc_variances(df)
-
     t_values = [20.0, 50.0, 310.0, 360.0, 410.0]
-    results = [query(variance_df, t) for t in t_values]
-    variance_df.unpersist()
+    variance_df = calc_variances(df)
+    variance410 = variance_df.filter(f'var <= {t_values[-1]}').persist(StorageLevel.MEMORY_ONLY)
+    t410 = variance410.count()
+    results = [query(variance410, t) for t in t_values[:-1]]
+    variance410.unpersist()
 
     for t, res in zip(t_values, results):
         print(f">> τ={t}: {len(res)}")
         if t in [20.0, 50.0]:
             print(f">> triples: {', '.join(res)}")
+    print(f">> τ={t_values[-1]}: {t410}")
     print(f">> seconds to calculate: {time.perf_counter() - start:0.2f}")
 
     if is_evaluation_enabled():
@@ -50,8 +52,7 @@ def calc_variances(df: DataFrame) -> DataFrame:
         .withColumn(
             'var',
             var_udf(F.col('AGG'))
-        ).select('full_id', 'var')\
-        .persist(StorageLevel.MEMORY_ONLY)
+        ).select('full_id', 'var')
 
 
 def query(df: DataFrame, t: float) -> List[str]:
