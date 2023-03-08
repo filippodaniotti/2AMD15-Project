@@ -7,7 +7,7 @@ GenVec takes one required- and two optional runtime parameters, namely:
 * the length of each vector (default value is 20)
 	
 You can run GenVec, after installing an up-to-date version of Java, by running the following command:
-```java
+```bash
 java -jar group-number [number-of-vectors] [length-of-vectors]
 ``` 
 	

@@ -3,6 +3,7 @@ from pyspark.sql import SparkSession, DataFrame
 
 import configuration
 from question2 import question2
+from question3 import question3
 
 
 def get_spark_context(on_server) -> SparkContext:
@@ -56,8 +57,7 @@ def q2(spark_context: SparkContext, data_frame: DataFrame):
 
 
 def q3(spark_context: SparkContext, rdd: RDD):
-    # TODO: Imlement Q3 here
-    return
+    question3(rdd)
 
 
 def q4(spark_context: SparkContext, rdd: RDD):
