@@ -30,7 +30,7 @@ def question2(df: DataFrame):
     print(f">> τ={t_values[-1]}: {t410}")
     print(f">> seconds to calculate: {time.perf_counter() - start:0.2f}")
 
-    if configuration.ENABLE_EVALUATION():
+    if configuration.ENABLE_EVALUATION:
         plot(list(map(str, t_values)), [len(row) for row in results])
 
 

@@ -1,13 +1,13 @@
 import os
+import re
 
-from shutil import move, copytree, rmtree
+import pysftp
+from subprocess import run
 from zipfile import ZipFile
 from contextlib import contextmanager
-from subprocess import run
-
 from argparse import ArgumentParser, Namespace
 
-from typing import List, Tuple, Dict, Set
+from typing import List, Dict, Set
 
 @contextmanager
 def ondir(path: str):
@@ -16,14 +16,6 @@ def ondir(path: str):
     os.chdir(dest)
     yield dest
     os.chdir(cwd)
-    
-@contextmanager
-def temp_path(path: str):
-    if os.path.isdir(path):
-        rmtree(path)
-    os.makedirs(path)
-    yield
-    rmtree(path)
 
 SRC_PATH = os.path.join("src", "2amd15")
 JAR_PATH = os.path.join("tools", "GenVec", "GenVec.jar")
@@ -51,25 +43,9 @@ SERVER_CONFIGURATION = {
 END_IMPORT_MARKER = "#_END_IMPORTS\n"
 BEGIN_CODE_MARKER = "#_BEGIN_CODE\n"
 
-def write_file_from_list(file: str, lines: List[str]):
-    with open(file, "w") as f:
-        for line in lines:
-            f.write(line)
-
-# def get_conf_files(file: str) -> Tuple[List[str], List[str]]:
-#     old_lines, new_lines = [], []
-#     with open(file, "r") as f:
-#         old_lines = f.readlines()
-#         for line_idx, line in enumerate(old_lines):
-#             new_lines.append(line)
-#             conf_entry = line.split(" ")[0]
-#             if conf_entry == "ON_SERVER":
-#                 new_lines[line_idx] = "ON_SERVER = True\n"
-#             elif conf_entry == "ENABLE_EVALUATION":
-#                 new_lines[line_idx] = "ENABLE_EVALUATION = False\n"
-            
-#     return new_lines, old_lines
-
+HOSTNAME = "odc-09.win.tue.nl"
+USERNAME = "group-13-2amd15-23"
+PORT = 222
 
 class ImportsParser:
     def __init__(self):
@@ -93,7 +69,6 @@ class ImportsParser:
                     
                     if tokens[0] == "from":
                         _, lib, _, *names = tokens
-                        # names = [name.strip(",").strip("\n") for name in names]
                         for name in names:
                             name = name.strip(",").strip("\n")
                             self.imports[lib].add(name)
@@ -121,7 +96,7 @@ class ImportsParser:
     def get_aliases(self) -> Dict[str, str]:
         return self.aliases
                 
-def extract_code_lines(file):
+def extract_code_lines(file: str) -> List[str]:
     lines = []
     marker_index = -1
     with open(file) as f:
@@ -132,28 +107,52 @@ def extract_code_lines(file):
                 break
     return lines[marker_index + 1:]
 
+def parse_configuration(file_lines: List[str]):
+    for line_idx, line in enumerate(file_lines):
+        for conf in SERVER_CONFIGURATION.keys():
+            if "configuration." in line and conf in line:
+                file_lines[line_idx] = line.replace(f"configuration.{conf}", str(SERVER_CONFIGURATION[conf]))
+    return file_lines
+
+def build_main(
+    question: int, 
+    code_lines: Dict[str, List[str]],
+    file_names: List[str],
+    imports: ImportsParser):
+    
+    question_file, main_file = file_names
+    
+    with open(MAIN_NAME, "w") as f:
+        f.write(str(imports))
+        for line in code_lines[question_file]:
+            f.write(line)
+        for line in code_lines[main_file]:
+            if re.match("^(\s)*q[2-4]", line) and f"q{question}" not in line:
+                line = "#" + line
+            f.write(line)
+
 def generate_source_archive(question: int):    
+    file_names = [f"question{question}.py", MAIN_NAME]
+    
     imports = ImportsParser()
     code_lines: Dict[str, List[str]] = {}
     
     with ondir(SRC_PATH):
-        files = filter(
-            lambda file: os.path.isfile(file) and ("question" in file or "main" in file), 
-            os.listdir()
-        )
-        for file in files:
+        if (file_names[0] not in os.listdir() or
+            file_names[1] not in os.listdir()):
+            raise RuntimeError("Missing files in source directory")
+        for file in file_names:
             imports.update_imports(file)
-            code_lines[file] = extract_code_lines(file)
+            lines = extract_code_lines(file)
+            lines = parse_configuration(lines)
+            code_lines[file] = lines
      
-    with temp_path(SRC_TMP_PATH):
-        with ondir(SRC_TMP_PATH):
-            with open(MAIN_NAME, "w") as f:
-                f.write(str(imports))
-            with ZipFile(SRC_ZIP_NAME, "w") as zip:
-                zip.write(MAIN_NAME)
-            move(SRC_ZIP_NAME, "..")
-                
-    
+    build_main(question, code_lines, file_names, imports)
+    with ZipFile(SRC_ZIP_NAME, "w") as zip:
+        zip.write(MAIN_NAME)
+    if os.path.isfile(MAIN_NAME):
+        os.remove(MAIN_NAME)
+                    
 def generate_data_archive(question: int):
     with ZipFile(DATA_ZIP_NAME, "w") as zip:
         run([
@@ -170,8 +169,16 @@ def main(args: Namespace):
     generate_data_archive(args.question)
     generate_source_archive(args.question)
     if not args.artifact_only:
-        pass
-        # submit to the server
+        raise NotImplementedError("Currently not supported")
+        # with pysftp.Connection(
+        #     host=HOSTNAME, 
+        #     username=USERNAME, 
+        #     password=args.password, 
+        #     port=PORT
+        # ) as sftp:
+        #     return
+        #     with sftp.cd('home'):
+        #         sftp.put('*.zip')
             
 if __name__ == "__main__":
     parser = ArgumentParser(description="Handles the building pipeline of the submission artifact.")
