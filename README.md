@@ -4,17 +4,32 @@
 
 ### Prepare for submission
 
-All the code is inside the `src/2amd15` folder. In order to prepare for the submission, a `app.zip` needs to be uploaded to the server, and such archive should contain a `main.py` file.
+All the code is inside the `src/2amd15` folder. In order to prepare for the submission, a `app.zip` needs to be uploaded to the server, and such archive should contain a `main.py` file. The data should be contained in a `data.zip` archive. Only one question per submission can be uploaded and tested.
 
-To produce the `app.zip` archive, you can run the following:
+The `submit.py` module takes care of prepare the aforementioned submission artifacts. Here is how to use it:
+```
+usage: submit.py [-h] [-a] -q {2,3,4} [-p PASSWORD]
+
+Handles the building pipeline of the submission artifact.
+
+options:
+  -h, --help            show this help message and exit
+  -a, --artifact-only   stop before submitting the artifacts to the server
+  -q {2,3,4}, --question {2,3,4}
+                        which question is the submission artifacts about
+  -p PASSWORD, --password PASSWORD
+                        password of the server, if -a is not passed
+```
+
+For instance, here is how you prepare the artifacts and submit for question 2:
 
 * Unix
 ```bash
-python3 ./tools/prepare_for_submission.py
+python3 ./tools/submit.py -a -q 2
 ```
 * Win
 ```cmd
-python .\tools\prepare_for_submission.py
+python .\tools\submit.py -a -q 2
 ```
 
 ### Connect to server

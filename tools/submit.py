@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 
 import pysftp
 from subprocess import run
@@ -204,9 +205,8 @@ if __name__ == "__main__":
         "--password",
         dest="password",
         type=str,
-        required=False,
+        required=not (("-a" not in sys.argv) ^ ("--artifact-only" not in sys.argv)),
         help="password of the server, if -a is not passed",
     )
-    
     args = parser.parse_args()
     main(args)
