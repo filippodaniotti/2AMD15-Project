@@ -67,7 +67,7 @@ def q4(spark_context: SparkContext, rdd: RDD):
 
 if __name__ == '__main__':
 
-    on_server = False  # TODO: Set this to true if and only if deploying to the server
+    on_server = configuration.ON_SERVER
 
     spark_context = get_spark_context(on_server)
 
