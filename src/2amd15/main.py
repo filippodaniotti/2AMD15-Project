@@ -1,11 +1,12 @@
 from pyspark import SparkConf, SparkContext, RDD
 from pyspark.sql import SparkSession, DataFrame
+#_END_IMPORTS
 
 import configuration
 from question2 import question2
 from question3 import question3
 
-
+#_BEGIN_CODE
 def get_spark_context(on_server) -> SparkContext:
     spark_conf = SparkConf()\
         .setAppName("2AMD15")\

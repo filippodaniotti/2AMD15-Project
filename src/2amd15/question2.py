@@ -4,12 +4,15 @@ from typing import List
 
 from pyspark import StorageLevel
 from pyspark.sql import DataFrame
-import pyspark.sql.functions as F
 from pyspark.sql.types import ArrayType, FloatType
+import pyspark.sql.functions as F
+#_END_IMPORTS
 
+import configuration
 from evaluation import plot, is_evaluation_enabled
 
 
+#_BEGIN_CODE
 def question2(df: DataFrame):
     start = time.perf_counter()
 
@@ -27,7 +30,7 @@ def question2(df: DataFrame):
     print(f">> τ={t_values[-1]}: {t410}")
     print(f">> seconds to calculate: {time.perf_counter() - start:0.2f}")
 
-    if is_evaluation_enabled():
+    if configuration.ENABLE_EVALUATION():
         plot(list(map(str, t_values)), [len(row) for row in results])
 
 

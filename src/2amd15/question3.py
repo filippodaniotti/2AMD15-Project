@@ -1,8 +1,10 @@
-from pyspark import StorageLevel, RDD
 import time
+from pyspark import StorageLevel, RDD
 from statistics import variance
+#_END_IMPORTS
 
 
+#_BEGIN_CODE
 def question3(rdd: RDD):
     start = time.perf_counter()
 

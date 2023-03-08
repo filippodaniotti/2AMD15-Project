@@ -1,16 +1,5 @@
 from typing import List
-
-from configuration import ENABLE_EVALUATION
-
-if ENABLE_EVALUATION:
-    try:
-        from matplotlib import pyplot as plt
-    except ImportError:
-        print("WARNING: matplotlib was not found, evaluation is not enabled")
-        ENABLE_EVALUATION = False
-    
-def is_evaluation_enabled() -> bool:
-    return ENABLE_EVALUATION
+from matplotlib import pyplot as plt
 
 def plot(t_values: List[str], results: List[int]):
     ax = plt.axes()
