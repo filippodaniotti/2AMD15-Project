@@ -5,6 +5,8 @@ from zipfile import ZipFile
 from contextlib import contextmanager
 from subprocess import run
 
+from argparse import ArgumentParser, Namespace
+
 from typing import List, Tuple
 
 @contextmanager
@@ -24,8 +26,12 @@ DATA_ZIP_NAME = os.path.join("data.zip")
 VECTORS_NAME = os.path.join("vectors.csv")
 
 GROUP_NUMBER = 13
-NUMBER_OF_VECTORS = 1000
 NUMBER_OF_COLUMNS = 10000
+NUMBER_OF_VECTORS = {
+    2: 250,
+    3: 1000,
+    4: 250
+}
 
 def write_file_from_list(file: str, lines: List[str]):
     with open(file, "w") as f:
@@ -61,21 +67,44 @@ def generate_source_archive():
     move(os.path.join(SRC_TMP_PATH, SRC_ZIP_NAME), SRC_ZIP_NAME)
     rmtree(SRC_TMP_PATH)
     
-def generate_data_archive():
+def generate_data_archive(question: int):
     with ZipFile(DATA_ZIP_NAME, "w") as zip:
         run([
             "java", 
             "-jar", 
             JAR_PATH, 
             str(GROUP_NUMBER), 
-            str(NUMBER_OF_VECTORS), 
+            str(NUMBER_OF_VECTORS[question]), 
             str(NUMBER_OF_COLUMNS)
         ])
         zip.write(VECTORS_NAME)
 
-def main():
-    generate_data_archive()
-    generate_source_archive()
+def main(args: Namespace):
+    generate_data_archive(args.question)
+    # generate_source_archive()
+    if not args.artifact_only:
+        pass
+        # submit to the server
             
 if __name__ == "__main__":
-    main()
+    parser = ArgumentParser(description="Handles the building pipeline of the submission artifact.")
+    parser.add_argument(
+        "-a",
+        "--artifact-only",
+        action="store_true",
+        dest="artifact_only",
+        required=False,
+        help="stop before submitting the artifacts to the server"
+    )
+    parser.add_argument(
+        "-q",
+        "--question",
+        dest="question",
+        type=int,
+        required=True,
+        choices=range(2, 5),
+        help="path of the video to analyze",
+    )
+    
+    args = parser.parse_args()
+    main(args)
