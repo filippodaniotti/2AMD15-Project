@@ -1,5 +1,33 @@
 # 2AMD15-Project
 
+## How to use
+
+### Prepare for submission
+
+All the code is inside the `src/2amd15` folder. In order to prepare for the submission, a `app.zip` needs to be uploaded to the server, and such archive should contain a `main.py` file.
+
+To produce the `app.zip` archive, you can run the following:
+
+* Unix
+```bash
+python3 ./tools/prepare_for_submission.py
+```
+* Win
+```cmd
+python .\tools\prepare_for_submission.py
+```
+
+### Connect to server
+It is possible to connect to the server via `sft` with the following script and then typing in the password
+* Unix
+```bash
+./tools/server/connect.sh
+```
+* Win
+```cmd
+.\tools\server\connect.bat
+```
+
 ## Template information
 This is a template project for team project of 2AMD15 2023.
 
