@@ -8,28 +8,28 @@ All the code is inside the `src/2amd15` folder. In order to prepare for the subm
 
 The `submit.py` module takes care of prepare the aforementioned submission artifacts. Here is how to use it:
 ```
-usage: submit.py [-h] [-a] -q {2,3,4} [-p PASSWORD]
+usage: submit.py [-h] [-s] -q {2,3,4} [-p PASSWORD]
 
 Handles the building pipeline of the submission artifact.
 
 options:
   -h, --help            show this help message and exit
-  -a, --artifact-only   stop before submitting the artifacts to the server
+  -s, --submit          Proceed with creating a submission on the server after build
   -q {2,3,4}, --question {2,3,4}
                         which question is the submission artifacts about
   -p PASSWORD, --password PASSWORD
-                        password of the server, if -a is not passed
+                        password of the server, required if -s is passed
 ```
 
 For instance, here is how you prepare the artifacts and submit for question 2:
 
 * Unix
 ```bash
-python3 ./tools/submit.py -a -q 2
+python3 ./tools/submit.py -q 2 -s
 ```
 * Win
 ```cmd
-python .\tools\submit.py -a -q 2
+python .\tools\submit.py -q 2 -s
 ```
 
 ### Connect to server

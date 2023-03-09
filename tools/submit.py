@@ -1,9 +1,9 @@
 import os
 import re
-import sys
 
 import pysftp
 from subprocess import run
+from getpass import getpass
 from zipfile import ZipFile
 from contextlib import contextmanager
 from argparse import ArgumentParser, Namespace
@@ -20,7 +20,6 @@ def ondir(path: str):
 
 SRC_PATH = os.path.join("src", "2amd15")
 JAR_PATH = os.path.join("tools", "GenVec", "GenVec.jar")
-SRC_TMP_PATH = os.path.join("app")
 
 SRC_ZIP_NAME = os.path.join("app.zip")
 DATA_ZIP_NAME = os.path.join("data.zip")
@@ -169,27 +168,26 @@ def generate_data_archive(question: int):
 def main(args: Namespace):
     generate_data_archive(args.question)
     generate_source_archive(args.question)
-    if not args.artifact_only:
-        raise NotImplementedError("Currently not supported")
-        # with pysftp.Connection(
-        #     host=HOSTNAME, 
-        #     username=USERNAME, 
-        #     password=args.password, 
-        #     port=PORT
-        # ) as sftp:
-        #     return
-        #     with sftp.cd('home'):
-        #         sftp.put('*.zip')
+    if args.submit:
+        with pysftp.Connection(
+            host=HOSTNAME, 
+            username=USERNAME, 
+            password=args.password, 
+            port=PORT,
+            auto_add_key=True
+        ) as sftp:
+            with sftp.cd('home'):
+                _ = [sftp.put(file) for file in [SRC_ZIP_NAME, DATA_ZIP_NAME]]
             
 if __name__ == "__main__":
     parser = ArgumentParser(description="Handles the building pipeline of the submission artifact.")
     parser.add_argument(
-        "-a",
-        "--artifact-only",
+        "-s",
+        "--submit",
         action="store_true",
-        dest="artifact_only",
+        dest="submit",
         required=False,
-        help="stop before submitting the artifacts to the server"
+        help="Proceed with creating a submission on the server after build"
     )
     parser.add_argument(
         "-q",
@@ -205,8 +203,10 @@ if __name__ == "__main__":
         "--password",
         dest="password",
         type=str,
-        required=not (("-a" not in sys.argv) ^ ("--artifact-only" not in sys.argv)),
-        help="password of the server, if -a is not passed",
+        required=False,
+        help="password of the server, required if -s is passed",
     )
     args = parser.parse_args()
+    if (args.submit and not args.password):
+        args.password = getpass()
     main(args)
