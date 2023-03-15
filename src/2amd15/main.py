@@ -7,6 +7,8 @@ from question2 import question2
 from question3 import question3
 
 #_BEGIN_CODE
+
+
 def get_spark_context(on_server) -> SparkContext:
     spark_conf = SparkConf()\
         .setAppName("2AMD15")\
@@ -26,9 +28,18 @@ def get_spark_context(on_server) -> SparkContext:
 
 
 def q1a(spark_context: SparkContext, on_server: bool) -> DataFrame:
-    vectors_file_path = "/vectors.csv" if on_server else "vectors.csv"
-
     spark_session = SparkSession(spark_context)
+
+    if on_server:
+        rdd = spark_context.textFile("hdfs:/vectors.csv", 64)\
+            .map(lambda line: tuple(
+                [line.split(',', 1)[0]]
+                + [float(x) for x in line.split(',', 1)[1].split(';')]
+            ))
+        df = rdd.toDF([("_" + str(k + 1)) for k in range(len(rdd.take(1)[0]))])
+        return df
+
+    vectors_file_path = "vectors.csv"
 
     # TODO: Implement Q1a here by creating a Dataset of DataFrame out of the file at {@code vectors_file_path}.
 
@@ -41,7 +52,15 @@ def q1a(spark_context: SparkContext, on_server: bool) -> DataFrame:
 
 
 def q1b(spark_context: SparkContext, on_server: bool) -> RDD:
-    vectors_file_path = "/vectors.csv" if on_server else "vectors.csv"
+    if on_server:
+        return spark_context.textFile("hdfs:/vectors.csv", 64).map(
+            lambda line: tuple(
+                [line.split(',', 1)[0]]
+                + [float(x) for x in line.split(',', 1)[1].split(';')]
+            )
+        )
+
+    vectors_file_path = "vectors.csv"
 
     # TODO: Implement Q1b here by creating an RDD out of the file at {@code vectors_file_path}.
 

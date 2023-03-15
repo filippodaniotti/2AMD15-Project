@@ -10,7 +10,7 @@ def question3(rdd: RDD):
 
     variance410 = rdd.cartesian(rdd)\
         .filter(lambda pair: pair[0][0] < pair[1][0])\
-        .repartition(10)\
+        .repartition(25)\
         .map(lambda pair:
              [pair[0][0]]
              + [pair[1][0]]

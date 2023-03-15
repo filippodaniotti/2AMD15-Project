@@ -48,6 +48,7 @@ def calc_variances(df: DataFrame) -> DataFrame:
         .crossJoin(df_with_arr.selectExpr('_1 as _2', 'ARR as ARR2'))\
         .filter('_1 < _2')\
         .withColumn('ARR_AGG_1', agg_udf(F.array('ARR', 'ARR2')))\
+        .repartition(25)\
         .crossJoin(df_with_arr.selectExpr('_1 as _3', 'ARR as ARR3'))\
         .filter('_2 < _3')\
         .withColumn('full_id', F.array('_1', '_2', '_3'))\
