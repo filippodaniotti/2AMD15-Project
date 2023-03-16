@@ -9,11 +9,12 @@ import pyspark.sql.functions as F
 #_END_IMPORTS
 
 import configuration
-from evaluation import plot, is_evaluation_enabled
+from evaluation import plot
 
 
 #_BEGIN_CODE
 def question2(df: DataFrame):
+    print('>> executing question 2')
     start = time.perf_counter()
 
     t_values = [20.0, 50.0, 310.0, 360.0, 410.0]

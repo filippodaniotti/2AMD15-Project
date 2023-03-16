@@ -172,7 +172,7 @@ poetry.toml
 
 # End of https://www.toptal.com/developers/gitignore/api/python
 
-./.vscode
+.vscode/*
 app.zip
 data.zip
 vectors.csv

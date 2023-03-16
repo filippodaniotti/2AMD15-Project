@@ -1,5 +1,6 @@
 from pyspark import SparkConf, SparkContext, RDD
 from pyspark.sql import SparkSession, DataFrame
+import numpy as np
 #_END_IMPORTS
 
 import configuration
@@ -12,8 +13,8 @@ from question3 import question3
 def get_spark_context(on_server) -> SparkContext:
     spark_conf = SparkConf()\
         .setAppName("2AMD15")\
-        .set("spark.executor.memory", "2g")\
-        .set("spark.driver.memory", "3g")
+        .set("spark.executor.memory", "6g")\
+        .set("spark.driver.memory", "6g")
     if not on_server:
         spark_conf = spark_conf.setMaster("local[*]")
     spark_context = SparkContext.getOrCreate(spark_conf)
@@ -54,10 +55,10 @@ def q1a(spark_context: SparkContext, on_server: bool) -> DataFrame:
 def q1b(spark_context: SparkContext, on_server: bool) -> RDD:
     if on_server:
         return spark_context.textFile("hdfs:/vectors.csv", 64).map(
-            lambda line: tuple(
-                [line.split(',', 1)[0]]
-                + [float(x) for x in line.split(',', 1)[1].split(';')]
-            )
+            lambda line: tuple([
+                line.split(',', 1)[0],
+                np.array([float(x) for x in line.split(',', 1)[1].split(';')])
+            ])
         )
 
     vectors_file_path = "vectors.csv"
@@ -65,10 +66,11 @@ def q1b(spark_context: SparkContext, on_server: bool) -> RDD:
     # TODO: Implement Q1b here by creating an RDD out of the file at {@code vectors_file_path}.
 
     with open(vectors_file_path) as f:
-        lines = [line.strip().split(',') for line in f.readlines()]
         return spark_context.parallelize(
-            [[line[0]] + [float(x) for x in line[1].split(';')]
-             for line in lines]
+            [tuple([
+                line.split(',', 1)[0],
+                np.array([float(x) for x in line.split(',', 1)[1].split(';')])
+            ]) for line in f.readlines()]
         )
 
 
@@ -95,7 +97,7 @@ if __name__ == '__main__':
 
     rdd = q1b(spark_context, on_server)
 
-    q2(spark_context, data_frame)
+    # q2(spark_context, data_frame)
 
     q3(spark_context, rdd)
 
