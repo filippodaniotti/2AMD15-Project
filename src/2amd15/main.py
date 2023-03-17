@@ -12,11 +12,11 @@ from question3 import question3
 
 def get_spark_context(on_server) -> SparkContext:
     spark_conf = SparkConf()\
-        .setAppName("2AMD15")\
-        .set("spark.executor.memory", "6g")\
-        .set("spark.driver.memory", "6g")
+        .setAppName("2AMD15")
     if not on_server:
-        spark_conf = spark_conf.setMaster("local[*]")
+        spark_conf = spark_conf.setMaster("local[*]")\
+            .set("spark.driver.memory", "6g")\
+            .set("spark.executor.memory", "8g")
     spark_context = SparkContext.getOrCreate(spark_conf)
 
     if on_server:
@@ -57,7 +57,7 @@ def q1b(spark_context: SparkContext, on_server: bool) -> RDD:
         return spark_context.textFile("hdfs:/vectors.csv", 64).map(
             lambda line: tuple([
                 line.split(',', 1)[0],
-                np.array([float(x) for x in line.split(',', 1)[1].split(';')])
+                [int(x) for x in line.split(',', 1)[1].split(';')]
             ])
         )
 
