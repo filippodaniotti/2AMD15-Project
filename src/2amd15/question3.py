@@ -37,10 +37,10 @@ def question3(rdd: RDD):
 
     triples20 = rdd\
         .cartesian(rdd)\
-        .coalesce(80)\
+        .coalesce(128)\
         .filter(lambda pair: pair[0] < pair[1])\
         .cartesian(rdd)\
-        .coalesce(160)\
+        .coalesce(256)\
         .filter(lambda pair: pair[0][1] < pair[1])\
         .map(calc_var(t410, vectorMapBroadcast))\
         .filter(lambda pair: pair[1] <= 20)\
@@ -53,4 +53,5 @@ def question3(rdd: RDD):
     print(f">> τ=20: {t20}")
 
     print(f">> seconds to calculate: {time.perf_counter() - start:0.2f}")
+    print(">> partition counts: 64-128-256")
     rdd.unpersist()
