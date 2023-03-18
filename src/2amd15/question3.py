@@ -1,5 +1,5 @@
 import time
-from pyspark import StorageLevel, RDD
+from pyspark import RDD
 from statistics import pvariance, mean
 #_END_IMPORTS
 
@@ -13,6 +13,8 @@ def question3(rdd: RDD):
     print('>> all hosts = ', rdd.context._jsc.sc().getExecutorMemoryStatus().keys())
     print('>> hosts len = ', rdd.context._jsc.sc().getExecutorMemoryStatus().keys().size())
     print('>> executing question 3')
+    print('>> vector count ', rdd.count())
+    print('>> vector length ', len(rdd.take(1)[0][1]))
     start = time.perf_counter()
 
     vectorMap = rdd.map(lambda pair: (
@@ -20,23 +22,17 @@ def question3(rdd: RDD):
         (pair[1], mean(pair[1]))
     )).collectAsMap()
 
-    rdd = rdd.keys().persist(StorageLevel.MEMORY_ONLY)
+    rdd = rdd.keys()
     print(">> partitions at the start: ", rdd.getNumPartitions())
 
     variance410 = rdd\
         .cartesian(rdd)\
-        .filter(lambda pair: pair[0] < pair[1])
-    print(">> partitions after first cartesian: ", variance410.getNumPartitions())
-
-    variance410 = variance410\
-        .coalesce(50)\
+        .coalesce(80)\
+        .filter(lambda pair: pair[0] < pair[1])\
         .cartesian(rdd)\
-        .filter(
-            lambda pair: pair[0][1] < pair[1] and pair[0][0] != pair[1]
-        )
-    rdd.unpersist()
-
-    print(">> partitions after second cartesian: ", variance410.getNumPartitions())
+        .coalesce(160)\
+        .filter(lambda pair: pair[0][1] < pair[1])
+    print(">> partitions after cartesians: ", variance410.getNumPartitions())
 
     vectorMapBroadcast = variance410.context.broadcast(vectorMap)
 
@@ -47,8 +43,6 @@ def question3(rdd: RDD):
             value0 = broadcast.value[keys[0][0]]
             value1 = broadcast.value[keys[0][1]]
             value2 = broadcast.value[keys[1]]
-            if value0 is None or value1 is None or value2 is None:
-                raise Exception(f"vector not found for given keys: {keys}")
 
             var = pvariance(
                 [x+y+z for x, y, z in zip(value0[0], value1[0], value2[0])],
@@ -56,7 +50,6 @@ def question3(rdd: RDD):
             )
             if var <= 410:
                 acc.add(1)
-                print('>>', (keys[0][0], keys[0][1], keys[1]), var)
 
             return (
                 (keys[0][0], keys[0][1], keys[1]),
@@ -65,7 +58,6 @@ def question3(rdd: RDD):
         return inner
 
     variance410 = variance410\
-        .repartition(100)\
         .map(calc_var(t410, vectorMapBroadcast))
 
     print(">> partitions at the end: ", variance410.getNumPartitions())
