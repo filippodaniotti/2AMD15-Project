@@ -28,7 +28,7 @@ MAIN_NAME = os.path.join("main.py")
 VECTORS_NAME = os.path.join("vectors.csv")
 
 GROUP_NUMBER = 13
-NUMBER_OF_COLUMNS = 200
+NUMBER_OF_COLUMNS = 10000
 NUMBER_OF_VECTORS = {
     2: 250,
     3: 1000,

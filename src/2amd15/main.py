@@ -54,10 +54,10 @@ def q1a(spark_context: SparkContext, on_server: bool) -> DataFrame:
 
 def q1b(spark_context: SparkContext, on_server: bool) -> RDD:
     if on_server:
-        return spark_context.textFile("hdfs:/vectors.csv", 40).map(
+        return spark_context.textFile("hdfs:/vectors.csv", 80).map(
             lambda line: tuple([
                 line.split(',', 1)[0],
-                [int(x) for x in line.split(',', 1)[1].split(';')]
+                np.array([np.int16(int(x)) for x in line.split(',', 1)[1].split(';')])
             ])
         )
 
