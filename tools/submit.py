@@ -1,5 +1,6 @@
 import os
 import re
+import logging
 
 import pysftp
 from subprocess import run
@@ -8,7 +9,11 @@ from zipfile import ZipFile
 from contextlib import contextmanager
 from argparse import ArgumentParser, Namespace
 
-from typing import List, Dict, Set
+from typing import List, Dict, Set, Union
+
+
+logging.basicConfig(format = '%(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
 
 @contextmanager
 def ondir(path: str):
@@ -127,7 +132,7 @@ def build_main(
         for line in code_lines[question_file]:
             f.write(line)
         for line in code_lines[main_file]:
-            if re.match("^(\s)*q[2-4]", line) and f"q{question}" not in line:
+            if re.match(r"^(\s)*q[2-4]", line) and f"q{question}" not in line:
                 line = "#" + line
             f.write(line)
 
@@ -137,38 +142,50 @@ def generate_source_archive(question: int):
     imports = ImportsParser()
     code_lines: Dict[str, List[str]] = {}
     
+    logger.debug("Parsing source code")
     with ondir(SRC_PATH):
         if (file_names[0] not in os.listdir() or
             file_names[1] not in os.listdir()):
             raise RuntimeError("Missing files in source directory")
         for file in file_names:
+            logger.debug(f"{file} found, analysing...")
             imports.update_imports(file)
             lines = extract_code_lines(file)
             lines = parse_configuration(lines)
             code_lines[file] = lines
      
+    logger.info(f"Building {MAIN_NAME}...")
     build_main(question, code_lines, file_names, imports)
     with ZipFile(SRC_ZIP_NAME, "w") as zip:
+        logger.debug(f"Compressing into {SRC_ZIP_NAME}")
         zip.write(MAIN_NAME)
     if os.path.isfile(MAIN_NAME):
         os.remove(MAIN_NAME)
+    logger.info("Done")
                     
-def generate_data_archive(question: int):
+def generate_data_archive(question: int, rows: Union[int, None]):
+    rows = rows if rows is not None else NUMBER_OF_VECTORS[question]
+    cols = NUMBER_OF_COLUMNS
+    logger.info(f"Generating new {VECTORS_NAME} file with\n\t - {cols} columns\n\t - {rows} rows")
     with ZipFile(DATA_ZIP_NAME, "w") as zip:
         run([
             "java", 
             "-jar", 
             JAR_PATH, 
             str(GROUP_NUMBER), 
-            str(NUMBER_OF_VECTORS[question]), 
-            str(NUMBER_OF_COLUMNS)
+            str(rows), 
+            str(cols)
         ])
+        logger.debug(f"Compressing into {DATA_ZIP_NAME}...")
         zip.write(VECTORS_NAME)
+    logger.info("Done")
 
 def main(args: Namespace):
-    generate_data_archive(args.question)
+    logger.info(f"Calling {__file__} on question {args.question}")
+    generate_data_archive(args.question, args.rows)
     generate_source_archive(args.question)
     if args.submit:
+        logger.info(f"-s was passed, deploying to cluster")
         with pysftp.Connection(
             host=HOSTNAME, 
             username=USERNAME, 
@@ -177,7 +194,9 @@ def main(args: Namespace):
             auto_add_key=True
         ) as sftp:
             with sftp.cd('home'):
-                _ = [sftp.put(file) for file in [SRC_ZIP_NAME, DATA_ZIP_NAME]]
+                sftp.put(SRC_ZIP_NAME)
+                sftp.put(DATA_ZIP_NAME)
+            logger.info("Submission complete")
             
 if __name__ == "__main__":
     parser = ArgumentParser(description="Handles the building pipeline of the submission artifact.")
@@ -206,7 +225,24 @@ if __name__ == "__main__":
         required=False,
         help="password of the server, required if -s is passed",
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        dest="verbose",
+        action="store_true",
+        required=False,
+        help="verbose flag, sets logging level to debug",
+    )
+    parser.add_argument(
+        "-r",
+        "--rows",
+        dest="rows",
+        type=int,
+        required=False,
+        help="number of vectors in the csv, overwrites default",
+    )
     args = parser.parse_args()
+    logger.setLevel(logging.DEBUG if args.verbose else logging.INFO)
     if (args.submit and not args.password):
         args.password = getpass()
     main(args)

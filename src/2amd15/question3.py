@@ -1,7 +1,6 @@
 import time
 import numpy as np
 from pyspark import RDD
-from statistics import pvariance, mean
 #_END_IMPORTS
 
 
