@@ -163,10 +163,10 @@ def generate_source_archive(question: int):
         os.remove(MAIN_NAME)
     logger.info("Done")
                     
-def generate_data_archive(question: int, rows: Union[int, None]):
+def generate_data_archive(question: int, rows: Union[int, None], cols: Union[int, None]):
     rows = rows if rows is not None else NUMBER_OF_VECTORS[question]
-    cols = NUMBER_OF_COLUMNS
-    logger.info(f"Generating new {VECTORS_NAME} file with\n\t - {cols} columns\n\t - {rows} rows")
+    cols = cols if cols is not None else NUMBER_OF_COLUMNS
+    logger.info(f"Generating new {VECTORS_NAME} file with\n\t- {cols} columns\n\t- {rows} rows")
     with ZipFile(DATA_ZIP_NAME, "w") as zip:
         run([
             "java", 
@@ -182,7 +182,7 @@ def generate_data_archive(question: int, rows: Union[int, None]):
 
 def main(args: Namespace):
     logger.info(f"Calling {__file__} on question {args.question}")
-    generate_data_archive(args.question, args.rows)
+    generate_data_archive(args.question, args.rows, args.cols)
     generate_source_archive(args.question)
     if args.submit:
         logger.info(f"-s was passed, deploying to cluster")
@@ -240,6 +240,14 @@ if __name__ == "__main__":
         type=int,
         required=False,
         help="number of vectors in the csv, overwrites default",
+    )
+    parser.add_argument(
+        "-c",
+        "--columns",
+        dest="cols",
+        type=int,
+        required=False,
+        help="length of vectors in the csv, overwrites default",
     )
     args = parser.parse_args()
     logger.setLevel(logging.DEBUG if args.verbose else logging.INFO)

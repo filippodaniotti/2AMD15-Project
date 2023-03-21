@@ -32,7 +32,7 @@ def q1a(spark_context: SparkContext, on_server: bool) -> DataFrame:
     spark_session = SparkSession(spark_context)
 
     if on_server:
-        rdd = spark_context.textFile("hdfs:/vectors.csv", 64)\
+        rdd = spark_context.textFile("hdfs:/vectors.csv", 64) \
             .map(lambda line: tuple(
                 [line.split(',', 1)[0]]
                 + [float(x) for x in line.split(',', 1)[1].split(';')]
@@ -54,8 +54,8 @@ def q1a(spark_context: SparkContext, on_server: bool) -> DataFrame:
 
 def q1b(spark_context: SparkContext, on_server: bool) -> RDD:
     if on_server:
-        return spark_context.textFile("hdfs:/vectors.csv", 64).map(
-            lambda line: tuple([
+        return spark_context.textFile("hdfs:/vectors.csv", 64) \
+            .map(lambda line: tuple([
                 line.split(',', 1)[0],
                 np.array([np.int16(int(x)) for x in line.split(',', 1)[1].split(';')])
             ])
@@ -99,8 +99,8 @@ if __name__ == '__main__':
 
     q2(spark_context, data_frame)
 
-    q3(spark_context, rdd)
+    # q3(spark_context, rdd)
 
-    q4(spark_context, rdd)
+    # q4(spark_context, rdd)
 
     spark_context.stop()

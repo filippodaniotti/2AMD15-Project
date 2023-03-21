@@ -7,7 +7,7 @@ if platform.system() == "Windows":
     os.environ['PYSPARK_DRIVER_PYTHON'] = sys.executable 
     
 ON_SERVER = False
-ENABLE_EVALUATION = True
+ENABLE_EVALUATION = False
 try:
     from matplotlib import pyplot as plt
 except ImportError:
