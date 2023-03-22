@@ -41,12 +41,14 @@ def question2(df: DataFrame):
 def calc_variances(df: DataFrame) -> DataFrame:
     df_with_arr = df \
         .withColumn('ARR', F.array(df.columns[1:])).select('_1', 'ARR') 
-        
-    df_map = df_with_arr.rdd.collectAsMap()
-    bc = df_with_arr.rdd.context.broadcast(df_map)
-    
+
+    bc = df_with_arr.rdd.context.broadcast({
+        key: np.array(value) for (key, value)
+        in df_with_arr.rdd.collectAsMap().items()
+    })
+
     df_no_arr = df.select('_1')
-    
+
     var_udf = F.udf(
         lambda row: np.var(bc.value[row[0]] + bc.value[row[1]] + bc.value[row[2]]).item(), 
         'float'
