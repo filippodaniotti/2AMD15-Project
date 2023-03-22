@@ -6,6 +6,7 @@ import numpy as np
 import configuration
 from question2 import question2
 from question3 import question3
+from question4 import question4
 
 #_BEGIN_CODE
 
@@ -83,8 +84,8 @@ def q3(spark_context: SparkContext, rdd: RDD):
 
 
 def q4(spark_context: SparkContext, rdd: RDD):
-    # TODO: Imlement Q4 here
-    return
+    question4(rdd)
+    
 
 
 if __name__ == '__main__':
