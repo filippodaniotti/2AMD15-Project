@@ -94,12 +94,6 @@ class ImportsParser:
             else:
                 out += f"import {key}\n"
         return out
-    
-    def get_imports(self) -> Dict[str, Set[str]]:
-        return self.imports
-    
-    def get_aliases(self) -> Dict[str, str]:
-        return self.aliases
                 
 def extract_code_lines(file: str) -> List[str]:
     lines = []

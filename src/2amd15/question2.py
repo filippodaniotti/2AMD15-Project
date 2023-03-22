@@ -43,7 +43,7 @@ def calc_variances(df: DataFrame) -> DataFrame:
         .withColumn('ARR', F.array(df.columns[1:])).select('_1', 'ARR') 
 
     bc = df_with_arr.rdd.context.broadcast({
-        key: np.array(value) for (key, value)
+        key: np.array(value, dtype=np.int16) for (key, value)
         in df_with_arr.rdd.collectAsMap().items()
     })
 
