@@ -53,7 +53,7 @@ def calc_variances(df: DataFrame) -> DataFrame:
     )
 
     return df_no_arr \
-        .crossJoin(df.selectExpr('_1 as _2')) \
+        .crossJoin(df_no_arr.selectExpr('_1 as _2')) \
         .repartition(25)\
         .filter('_1 < _2')\
         .crossJoin(df_no_arr.selectExpr('_1 as _3'))\

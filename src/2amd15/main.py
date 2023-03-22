@@ -99,8 +99,8 @@ if __name__ == '__main__':
 
     q2(spark_context, data_frame)
 
-    # q3(spark_context, rdd)
+    q3(spark_context, rdd)
 
-    # q4(spark_context, rdd)
+    q4(spark_context, rdd)
 
     spark_context.stop()
