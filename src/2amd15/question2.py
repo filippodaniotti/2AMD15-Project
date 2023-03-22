@@ -17,10 +17,12 @@ from evaluation import plot
 def question2(df: DataFrame):
     print('>> executing question 2')
     start = time.perf_counter()
-
+    
     t_values = [20.0, 50.0, 310.0, 360.0, 410.0]
     variance_df = calc_variances(df)
-    variance410 = variance_df.filter(f'var <= {t_values[-1]}').persist(StorageLevel.MEMORY_ONLY)
+    variance410 = variance_df \
+        .filter(f'var <= {t_values[-1]}') \
+        .persist(StorageLevel.MEMORY_ONLY)
     t410 = variance410.count()
     results = [query(variance410, t) for t in t_values[:-1]]
     variance410.unpersist()
@@ -37,61 +39,30 @@ def question2(df: DataFrame):
 
 
 def calc_variances(df: DataFrame) -> DataFrame:
-    # def a(row):
-    #     a = np.var(row)
-    #     b = pvariance(row)
-    #     print(row)
-    #     print(type(a))
-    #     print(type(b))
-    #     print()
+    df_with_arr = df \
+        .withColumn('ARR', F.array(df.columns[1:])).select('_1', 'ARR') 
         
-    #     return float(a)
-    # var_udf = F.udf(a)
-    var_udf = F.udf(lambda row: float(np.var(row)), 'float')
-    agg_udf = F.udf(
-        lambda row: [x+y for x, y in zip(row[0], row[1])],
-        ArrayType(FloatType())
+    df_map = df_with_arr.rdd.collectAsMap()
+    bc = df_with_arr.rdd.context.broadcast(df_map)
+    
+    df_no_arr = df.select('_1')
+    
+    var_udf = F.udf(
+        lambda row: np.var(bc.value[row[0]] + bc.value[row[1]] + bc.value[row[2]]).item(), 
+        'float'
     )
-    
 
-    df_with_arr = df.withColumn('ARR', F.array(
-        df.columns[1:])).select('_1', 'ARR')
-    
-    # ret = df_with_arr \
-    #     .crossJoin(df_with_arr.selectExpr('_1 as _2', 'ARR as ARR2'))\
-    #     .repartition(25)\
-    #     .filter('_1 < _2')\
-    #     .withColumn('ARR_AGG_1', agg_udf(F.array('ARR', 'ARR2')))\
-    #     .crossJoin(df_with_arr.selectExpr('_1 as _3', 'ARR as ARR3'))\
-    #     .filter('_2 < _3')\
-    #     .withColumn('full_id', F.array('_1', '_2', '_3'))\
-    #     .withColumn('AGG', agg_udf(F.array('ARR_AGG_1', 'ARR3')))\
-    #     .withColumn(
-    #         'var',
-    #         var_udf(F.col('AGG'))
-    #     ).select('full_id', 'var')
-    # ret = df_with_arr \
-    #     .withColumn(
-    #         'var',
-    #         var_udf(F.col('ARR'))
-    #     ).select('_1', 'var')
-    
-    # ret.show(5)
-
-    return df_with_arr \
-        .crossJoin(df_with_arr.selectExpr('_1 as _2', 'ARR as ARR2'))\
+    return df_no_arr \
+        .crossJoin(df.selectExpr('_1 as _2')) \
         .repartition(25)\
         .filter('_1 < _2')\
-        .withColumn('ARR_AGG_1', agg_udf(F.array('ARR', 'ARR2')))\
-        .crossJoin(df_with_arr.selectExpr('_1 as _3', 'ARR as ARR3'))\
+        .crossJoin(df_no_arr.selectExpr('_1 as _3'))\
         .filter('_2 < _3')\
         .withColumn('full_id', F.array('_1', '_2', '_3'))\
-        .withColumn('AGG', agg_udf(F.array('ARR_AGG_1', 'ARR3')))\
         .withColumn(
             'var',
-            var_udf(F.col('AGG'))
-        ).select('full_id', 'var')
-    return ret
+            var_udf(F.col('full_id'))) \
+        .select('full_id', 'var')
 
 def query(df: DataFrame, t: float) -> List[str]:
     return [
