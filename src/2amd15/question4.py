@@ -18,7 +18,7 @@ def question4(rdd: RDD):
 
     def merge_and_variance(key1, key2, key3, depth, broadcast):
         agregate = broadcast.value[key1] + broadcast.value[key2] + broadcast.value[key3]
-        return min(np.var(agregate[i]) for i in range(0, depth))
+        return min(np.sum(agregate[i]**2)/10000 -(np.sum(agregate[i])/10000)**2 for i in range(0, depth))
  
 
     def calculate_variances(cartesianKeys : RDD, rdd : RDD,ε,δ):
