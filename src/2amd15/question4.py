@@ -18,11 +18,13 @@ def question4(rdd: RDD):
 
     def merge_and_variance(key1, key2, key3, depth, broadcast):
         agregate = broadcast.value[key1] + broadcast.value[key2] + broadcast.value[key3]
-        return min(np.sum(agregate[i]**2)/10000 -(np.sum(agregate[i])/10000)**2 for i in range(0, depth))
+        inner = np.sum(agregate * agregate, axis=1)
+        return np.min(inner)/10000 - (np.sum(agregate[0])/10000)**2
+        # Original solution:
+        # return min(np.sum(agregate[i]**2)/10000 -(np.sum(agregate[i])/10000)**2 for i in range(0, depth))
  
 
     def calculate_variances(cartesianKeys : RDD, rdd : RDD,ε,δ):
-
         depth = math.ceil(math.log(1/δ))
         width = math.ceil(math.e/ε)
 
@@ -47,25 +49,65 @@ def question4(rdd: RDD):
 
     rddKeys.unpersist()
 
-    print('>> functionality 1:')
-    ε_values=[0.001, 0.01]
-    for ε in ε_values:
-      t400 = calculate_variances(cartesianKeys, rdd, ε, 0.1).filter(lambda pair: pair <= 400)\
-             .count()
-      print(f">>   τ<400 for ε ={ε}: {t400}")
-    print(f">>  seconds to calculate (including the cartesian keys): {time.perf_counter() - start:0.2f}")
-
-    start = time.perf_counter()
-    print('>> functionality 2:')
     ε_values=[0.0001, 0.001, 0.002, 0.01]
     for ε in ε_values:
-      t200000Rdd = calculate_variances(cartesianKeys, rdd, ε, 0.1).filter(lambda pair: pair >= 200000)\
-              .cache()     
-      t200000 = t200000Rdd.count()
-      t1000000 = t200000Rdd.filter(lambda pair: pair >= 1000000).count()
-      t200000Rdd.unpersist()
+      var = calculate_variances(cartesianKeys, rdd, ε, 0.1).cache()
+      if ε in [0.001, 0.01]:
+        t400 = var.filter(lambda pair: pair <= 400).count()
+        print('>> functionality 1:')
+        print(f">>   τ<400 for ε ={ε}: {t400}")
+
+      t200000 = var.filter(lambda pair: pair >= 200000).count()
+      t1000000 = var.filter(lambda pair: pair >= 1000000).count()
+      print('>> functionality 2:')
       print(f">>   τ>200000 for ε ={ε}: {t200000}")
       print(f">>   τ>1000000 for ε ={ε}: {t1000000}")
-    
+
+      var.unpersist()
+
     cartesianKeys.unpersist()
-    print(f">>  seconds to calculate (cartesian keys already done in the previous functionality): {time.perf_counter() - start:0.2f}")
+    print(f">>  seconds to calculate (including the cartesian keys): {time.perf_counter() - start:0.2f}")
+
+    # Original solution:  
+    # print('>> functionality 1:')
+    # ε_values=[0.001, 0.01]
+    # for ε in ε_values:
+    #   t400 = calculate_variances(cartesianKeys, rdd, ε, 0.1).filter(lambda pair: pair <= 400)\
+    #          .count()
+    #   print(f">>   τ<400 for ε ={ε}: {t400}")
+    # print(f">>  seconds to calculate (including the cartesian keys): {time.perf_counter() - start:0.2f}")
+
+    # start = time.perf_counter()
+    # print('>> functionality 2:')
+    # ε_values=[0.0001, 0.001, 0.002, 0.01]
+    # for ε in ε_values:
+    #   t200000Rdd = calculate_variances(cartesianKeys, rdd, ε, 0.1).filter(lambda pair: pair >= 200000)\
+    #           .cache()     
+    #   t200000 = t200000Rdd.count()
+    #   t1000000 = t200000Rdd.filter(lambda pair: pair >= 1000000).count()
+    #   t200000Rdd.unpersist()
+    #   print(f">>   τ>200000 for ε ={ε}: {t200000}")
+    #   print(f">>   τ>1000000 for ε ={ε}: {t1000000}")
+    
+    # cartesianKeys.unpersist()
+    # print(f">>  seconds to calculate (cartesian keys already done in the previous functionality): {time.perf_counter() - start:0.2f}")
+
+# Original solution:
+# >> functionality 1:
+# 23/03/23 10:11:04 WARN TaskSetManager: Stage 0 contains a task of very large size (6492 KiB). The maximum recommended task size is 1000 KiB.
+# 23/03/23 10:11:06 WARN TaskSetManager: Stage 1 contains a task of very large size (38933 KiB). The maximum recommended task size is 1000 KiB.
+# >>   τ<400 for ε =0.001: 0                                                      
+# 23/03/23 10:22:51 WARN TaskSetManager: Stage 2 contains a task of very large size (6492 KiB). The maximum recommended task size is 1000 KiB.
+# 23/03/23 10:22:52 WARN TaskSetManager: Stage 3 contains a task of very large size (38933 KiB). The maximum recommended task size is 1000 KiB.
+# >>   τ<400 for ε =0.01: 0                                                       
+# >>  seconds to calculate (including the cartesian keys): 1071.50
+
+# Modified solution:
+# >> functionality 1:
+# 23/03/23 10:32:14 WARN TaskSetManager: Stage 0 contains a task of very large size (6492 KiB). The maximum recommended task size is 1000 KiB.
+# 23/03/23 10:32:16 WARN TaskSetManager: Stage 1 contains a task of very large size (38933 KiB). The maximum recommended task size is 1000 KiB.
+# >>   τ<400 for ε =0.001: 0                                                      
+# 23/03/23 10:40:08 WARN TaskSetManager: Stage 2 contains a task of very large size (6492 KiB). The maximum recommended task size is 1000 KiB.
+# 23/03/23 10:40:09 WARN TaskSetManager: Stage 3 contains a task of very large size (38933 KiB). The maximum recommended task size is 1000 KiB.
+# >>   τ<400 for ε =0.01: 0                                                       
+# >>  seconds to calculate (including the cartesian keys): 634.36
