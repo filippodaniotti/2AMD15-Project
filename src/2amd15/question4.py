@@ -6,7 +6,7 @@ def question4(rdd: RDD):
     start = time.perf_counter()
             
 
-    hash_vec = [lambda x: (41651 * x + 97879)%71909, lambda x: (39359* x + 35051)%14879, lambda x: (17881* x + 93911)%56911]
+    hash_vec = [lambda x: (41651 * x + 415721)%530531, lambda x: (39359* x + 653593)%761023, lambda x: (17881* x + 277003)%806783]
 
     def create_CM(vector, depth, width):
         table = np.zeros([depth, width])  # Create empty table
