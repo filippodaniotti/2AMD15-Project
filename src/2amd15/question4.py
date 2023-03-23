@@ -3,9 +3,6 @@ import numpy as np
 import time
 import math
 def question4(rdd: RDD):
-    #print('>> executing question 3')
-    #print('>> vector count ', rdd.count())
-    #print('>> vector length ', len(rdd.take(1)[0][1]))
     start = time.perf_counter()
             
 
