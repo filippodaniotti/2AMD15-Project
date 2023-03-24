@@ -20,12 +20,10 @@ def question4(rdd: RDD):
             table[d, index] += vector[i]
         return table
 
-    def merge_and_variance(key1, key2, key3, depth, broadcast):
+    def merge_and_variance(key1, key2, key3, broadcast):
         agregate = broadcast.value[key1] + broadcast.value[key2] + broadcast.value[key3]
         inner = np.sum(agregate * agregate, axis=1)
         return np.min(inner)/10000 - (np.sum(agregate[0])/10000)**2
-        # Original solution:
-        # return min(np.sum(agregate[i]**2)/10000 -(np.sum(agregate[i])/10000)**2 for i in range(0, depth))
  
 
     def calculate_variances(cartesianKeys : RDD, rdd : RDD,ε,δ):
@@ -37,7 +35,7 @@ def question4(rdd: RDD):
                                           
         sketchMapBroadcast = rdd.context.broadcast(sketchMap)
 
-        return cartesianKeys.map(lambda keys: merge_and_variance(keys[0][0], keys[0][1], keys[1], depth, sketchMapBroadcast))
+        return cartesianKeys.map(lambda keys: merge_and_variance(keys[0][0], keys[0][1], keys[1], sketchMapBroadcast))
 
 
     rddKeys = rdd.keys().cache()
