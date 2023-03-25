@@ -117,21 +117,29 @@ def build_main(
     question: int, 
     code_lines: Dict[str, List[str]],
     file_names: List[str],
-    imports: ImportsParser):
+    imports: ImportsParser,
+    full: bool):
     
-    question_file, main_file = file_names
+    main_file, *questions = file_names
     
     with open(MAIN_NAME, "w") as f:
         f.write(str(imports))
-        for line in code_lines[question_file]:
-            f.write(line)
+        for question_file in questions:
+            for line in code_lines[question_file]:
+                f.write(line)
         for line in code_lines[main_file]:
-            if re.match(r"^(\s)*q[2-4]", line) and f"q{question}" not in line:
+            
+            if not full and re.match(r"^(\s)*q[2-4]", line) and f"q{question}" not in line:
                 line = "#" + line
             f.write(line)
 
-def generate_source_archive(question: int):    
-    file_names = [f"question{question}.py", MAIN_NAME]
+def generate_source_archive(question: int, full: bool = False):
+    file_names = [MAIN_NAME, f"question{question}.py"]
+    if full:
+        questions = {q for q in range(2, 5)}
+        questions -= {question}
+        for q in questions:
+            file_names.append(f"question{q}.py")
     
     imports = ImportsParser()
     code_lines: Dict[str, List[str]] = {}
@@ -149,7 +157,7 @@ def generate_source_archive(question: int):
             code_lines[file] = lines
      
     logger.info(f"Building {MAIN_NAME}...")
-    build_main(question, code_lines, file_names, imports)
+    build_main(question, code_lines, file_names, imports, full)
     with ZipFile(SRC_ZIP_NAME, "w") as zip:
         logger.debug(f"Compressing into {SRC_ZIP_NAME}")
         zip.write(MAIN_NAME)
@@ -177,7 +185,7 @@ def generate_data_archive(question: int, rows: Union[int, None], cols: Union[int
 def main(args: Namespace):
     logger.info(f"Calling {__file__} on question {args.question}")
     generate_data_archive(args.question, args.rows, args.cols)
-    generate_source_archive(args.question)
+    generate_source_archive(args.question, args.full)
     if args.submit:
         logger.info(f"-s was passed, deploying to cluster")
         with pysftp.Connection(
@@ -242,6 +250,14 @@ if __name__ == "__main__":
         type=int,
         required=False,
         help="length of vectors in the csv, overwrites default",
+    )
+    parser.add_argument(
+        "-f",
+        "--full-build",
+        action="store_true",
+        dest="full",
+        required=False,
+        help="builds a main.py with full code",
     )
     args = parser.parse_args()
     logger.setLevel(logging.DEBUG if args.verbose else logging.INFO)

@@ -8,7 +8,7 @@ All the code is inside the `src/2amd15` folder. In order to prepare for the subm
 
 The `submit.py` module takes care of prepare the aforementioned submission artifacts. Here is how to use it:
 ```
-usage: submit.py [-h] [-s] -q {2,3,4} [-p PASSWORD] [-v] [-r ROWS] [-c COLS]
+usage: submit.py [-h] [-s] -q {2,3,4} [-p PASSWORD] [-v] [-r ROWS] [-c COLS] [-f]
 
 Handles the building pipeline of the submission artifact.
 
@@ -23,6 +23,7 @@ options:
   -r ROWS, --rows ROWS  number of vectors in the csv, overwrites default
   -c COLS, --columns COLS
                         length of vectors in the csv, overwrites default
+  -f, --full-build      builds a main.py with full code
 ```
 
 For instance, here is how you prepare the artifacts and submit for question 2:
