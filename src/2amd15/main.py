@@ -9,8 +9,6 @@ from question3 import question3
 from question4 import question4
 
 #_BEGIN_CODE
-
-
 def get_spark_context(on_server) -> SparkContext:
     spark_conf = SparkConf()\
         .setAppName("2AMD15")
@@ -21,9 +19,6 @@ def get_spark_context(on_server) -> SparkContext:
     spark_context = SparkContext.getOrCreate(spark_conf)
 
     if on_server:
-        # TODO: You may want to change ERROR to WARN to receive more info.
-        # For larger data sets, to not set the log level to anything below WARN,
-        # Spark will print too much information.
         spark_context.setLogLevel("ERROR")
 
     return spark_context
@@ -31,19 +26,16 @@ def get_spark_context(on_server) -> SparkContext:
 
 def q1a(spark_context: SparkContext, on_server: bool) -> DataFrame:
     spark_session = SparkSession(spark_context)
+    vectors_file_path = "vectors.csv"
 
     if on_server:
-        rdd = spark_context.textFile("hdfs:/vectors.csv", 64) \
+        rdd = spark_context.textFile(f"hdfs:/{vectors_file_path}", 64) \
             .map(lambda line: tuple(
                 [line.split(',', 1)[0]]
                 + [float(x) for x in line.split(',', 1)[1].split(';')]
             ))
         df = rdd.toDF([("_" + str(k + 1)) for k in range(len(rdd.take(1)[0]))])
         return df
-
-    vectors_file_path = "vectors.csv"
-
-    # TODO: Implement Q1a here by creating a Dataset of DataFrame out of the file at {@code vectors_file_path}.
 
     with open(vectors_file_path) as f:
         lines = [line.strip().split(',') for line in f.readlines()]
@@ -54,17 +46,15 @@ def q1a(spark_context: SparkContext, on_server: bool) -> DataFrame:
 
 
 def q1b(spark_context: SparkContext, on_server: bool) -> RDD:
+    vectors_file_path = "vectors.csv"
+    
     if on_server:
-        return spark_context.textFile("hdfs:/vectors.csv", 64) \
+        return spark_context.textFile(f"hdfs:/{vectors_file_path}", 64) \
             .map(lambda line: tuple([
                 line.split(',', 1)[0],
                 np.array([np.int16(int(x)) for x in line.split(',', 1)[1].split(';')])
             ])
         )
-
-    vectors_file_path = "vectors.csv"
-
-    # TODO: Implement Q1b here by creating an RDD out of the file at {@code vectors_file_path}.
 
     with open(vectors_file_path) as f:
         return spark_context.parallelize(
@@ -84,7 +74,7 @@ def q3(spark_context: SparkContext, rdd: RDD):
 
 
 def q4(spark_context: SparkContext, rdd: RDD):
-    question4(rdd)
+    question4(spark_context, rdd)
     
 
 
