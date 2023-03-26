@@ -1,9 +1,8 @@
 import time
 import numpy as np
-from statistics import pvariance
 from typing import List
 
-from pyspark import StorageLevel
+from pyspark import StorageLevel, SparkContext
 from pyspark.sql import DataFrame
 from pyspark.sql.types import ArrayType, FloatType
 import pyspark.sql.functions as F
@@ -17,7 +16,7 @@ from evaluation import plot
 
 
 #_BEGIN_CODE
-def question2(df: DataFrame) -> None:
+def question2(spark_context: SparkContext, df: DataFrame) -> None:
     print('>> executing question 2')
     print('>> partitions: 16-32-64')
     start = time.perf_counter()
@@ -26,7 +25,7 @@ def question2(df: DataFrame) -> None:
         df_with_arr = df \
             .withColumn('ARR', F.array(df.columns[1:])).select('_1', 'ARR')
 
-        bc = df_with_arr.rdd.context.broadcast({
+        bc = spark_context.broadcast({
             key: np.array(value, dtype=np.int16) for (key, value)
             in df_with_arr.rdd.collectAsMap().items()
         })

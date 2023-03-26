@@ -66,11 +66,11 @@ def q1b(spark_context: SparkContext, on_server: bool) -> RDD:
 
 
 def q2(spark_context: SparkContext, data_frame: DataFrame):
-    question2(data_frame)
+    question2(spark_context, data_frame)
 
 
 def q3(spark_context: SparkContext, rdd: RDD):
-    question3(rdd)
+    question3(spark_context, rdd)
 
 
 def q4(spark_context: SparkContext, rdd: RDD):

@@ -1,9 +1,10 @@
-from pyspark import RDD, SparkContext
-import numpy as np
 import time
 import math
+import numpy as np
+from pyspark import RDD, SparkContext
+from pyspark.broadcast import Broadcast
 
-from typing import Any
+from typing import Callable
 #_END_IMPORTS
 
 
@@ -21,7 +22,7 @@ def question4(spark_context: SparkContext, rdd: RDD) -> None:
         lambda x: (17881 * x + 277003) % 806783
     ]
 
-    def create_CM(vector, depth, width) -> np.ndarray:
+    def create_CM(vector: np.ndarray, depth: int, width: int) -> np.ndarray:
         table = np.zeros([depth, width])  # Create empty table
         for vec_idx, value in enumerate(vector):
             for depth_idx, hash_fn in enumerate(hash_vec):
@@ -29,7 +30,7 @@ def question4(spark_context: SparkContext, rdd: RDD) -> None:
                 table[depth_idx, width_idx] += value
         return table
         
-    def merge_and_variance(key1, key2, key3, broadcast) -> float:
+    def merge_and_variance(key1: str, key2: str, key3: str, broadcast: Broadcast) -> float:
         aggregate = broadcast.value[key1] + broadcast.value[key2] + broadcast.value[key3]
         inner = np.sum(aggregate * aggregate, axis=1)
         return np.min(inner)/10000 - (np.sum(aggregate[0])/10000)**2
@@ -38,27 +39,27 @@ def question4(spark_context: SparkContext, rdd: RDD) -> None:
     def calculate_variances(
             cartesian_keys: RDD, 
             rdd_keys: RDD, 
-            vector_map_broadcast: Any, 
+            vector_map_broadcast: Broadcast, 
             epsilon: float, 
             delta: float) -> RDD:
         depth = math.ceil(math.log(1 / delta))
         width = math.ceil(math.e / epsilon)
 
-        def get_sketches(broadcast):
+        def get_sketches(broadcast: Broadcast) -> Callable:
             return lambda key: (key, create_CM(broadcast.value[key], depth, width))
 
         sketch_map = rdd_keys \
             .map(get_sketches(vector_map_broadcast)) \
             .collectAsMap() 
                           
-        sketch_map_broadcast = rdd.context.broadcast(sketch_map)
+        sketch_map_broadcast = spark_context.broadcast(sketch_map)
 
         return cartesian_keys \
             .map(lambda keys: merge_and_variance(keys[0][0], keys[0][1], keys[1], sketch_map_broadcast))
 
 
     vector_map = rdd.collectAsMap()
-    vector_map_broadcast = rdd.context.broadcast(vector_map)
+    vector_map_broadcast = spark_context.broadcast(vector_map)
 
     rdd_keys = rdd.keys().cache()
 
