@@ -1,0 +1,13 @@
+\begin{tabular}{l c}
+    \toprule
+    \textbf{Optimization} & \textbf{Execution time} \\
+    \midrule
+    All            & 163.56s    \\
+    No numpy       & 443.19s    \\
+    No repartition/coalesce  & 2108.38s     \\
+    No broadcast   & ran out of heap    \\ 
+    \bottomrule
+\end{tabular}
+\makeatletter\def\@captype{table}\makeatother% "Change float to table"
+\caption{Impact of optimizations tricks on the dataset of size 125x10000, ran locally.}
+\label{tab:q2_optimisations}

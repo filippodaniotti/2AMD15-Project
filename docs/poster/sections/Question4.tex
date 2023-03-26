@@ -1,0 +1,81 @@
+ \begin{block}{Question 4}
+We used \textbf{Count-min (CM) sketch} (\cite{cm-sketch}). Illustration of the approximation of the aggregate variance:
+
+\begin{figure}
+    \centering
+    \includegraphics[width=.8\linewidth]{../assets/images/q4_sketch_usage.png}
+    \caption{Count-min sketch exploitation for Q4}
+    \label{fig:q4_sketch}
+\end{figure}
+
+%Formally, the approximated aggregate variance can be expressed as follows,
+%\begin{equation}
+%    \widehat{\sigma}^2=\left(\frac{1}{10000}\widehat{(\mathbf{a}\odot\mathbf{a})}\right)-\mu_{\mathbf{a}}^2
+%\end{equation}
+
+% \begin{columns}[t]
+%    \begin{column}{.5\textwidth}
+%        \input{../assets/code/create_sketch}
+%    \end{column}
+%    \hfill
+%    \begin{column}{.5\textwidth}
+%        \input{../assets/code/merge_and_variance}
+%        \vspace{0pt}
+%    \end{column}
+% \end{columns}
+
+\textbf{Theorem 1.} $\sigma^2\leq\widehat{\sigma^2}$ and, with probability $1-\delta$, we have that $\widehat{\sigma^2}\leq\sigma^2 + \frac{1}{10000}\varepsilon\norm{\mathbf{a}}^2$
+
+\emph{Proof.} By the definition of $\widehat{\sigma^2}$ and $\sigma^2$ and from the \textbf{Theorem 3} from the \cite{cm-sketch} paper
+\begin{equation}
+    \sigma^2=\frac{1}{10000}(\mathbf{a}\odot\mathbf{a})-\mu_{\mathbf{a}}^2\leq\frac{1}{10000}\widehat{(\mathbf{a}\odot\mathbf{a})}-\mu_{\mathbf{a}}^2=\widehat{\sigma^2}    
+\end{equation}
+
+Therefore, $\sigma^2\leq\widehat{\sigma^2}$ for non-negative vectors. Similarly,
+\begin{equation}
+    \begin{aligned}
+    \mathbb{P}\left[\widehat{\sigma^2} - \sigma^2 \geq \frac{1}{10000}\varepsilon\norm{\mathbf{a}}^2\right] & = \mathbb{P}\left[\frac{1}{10000}\left(\widehat{(\mathbf{a}\odot\mathbf{a})} - (\mathbf{a}\odot\mathbf{a})\right) \geq \frac{\varepsilon\norm{\mathbf{a}}^2}{10000}\right] \\ 
+    & = \mathbb{P}\left[\left(\widehat{(\mathbf{a}\odot\mathbf{a})} - (\mathbf{a}\odot\mathbf{a})\right) \geq \varepsilon\norm{\mathbf{a}}^2\right]\leq\delta
+    \end{aligned}
+\end{equation}
+
+So, $\mathbb{P}\left[\widehat{\sigma^2} - \sigma^2 \geq \frac{1}{10000}\varepsilon\norm{\mathbf{a}}^2\right]\leq\delta$, as required.
+\begin{flushright}
+    \emph{QED}
+\end{flushright}
+
+System architecture for Question 4:
+\begin{figure}
+    \centering
+    \includegraphics[width=.95\linewidth]{../assets/images/q4_diagram.png}
+    \caption{Brief description of the system architecture for Q4}
+    \label{fig:q4_diagram}
+\end{figure}
+
+The execution time of Q4 on the cluster: \textbf{164.33 seconds} 
+
+\begin{center}
+    \input{../assets/tables/q4_precision_recall.tex}
+\end{center}
+
+\emph{CM sketch} always \textbf{overestimating} the results, therefore:
+\begin{itemize}
+    \item for \emph{functionality 1} ($\leq\tau$): counts are underestimated, only TP triplets $\rightarrow$ precision is 1
+    \item for \emph{functionality 2} ($\geq\tau$): counts are overestimated, lots of FP triplets, but no FNs $\rightarrow$ recall is 1
+    \item smaller $\delta$ $\rightarrow$ larger depth $d$ $\rightarrow$ a better approximation of the aggregate variance $\rightarrow$ higher recall for \emph{functionality 1} and higher precision for \emph{functionality 2}
+    \item for smaller $\varepsilon$ $\rightarrow$ larger width $w$ $\rightarrow$ fewer collisions $\rightarrow$ a better approximation $\rightarrow$ higher recall for \emph{functionality 1} and higher precision for \emph{functionality 2}
+\end{itemize}
+
+The dimension of the sketch is important:
+\begin{itemize}
+    \item too small $\varepsilon$ $\rightarrow$ huge size of the sketch $\rightarrow$ slow computation, but more precise results
+    \item too big $\varepsilon$ $\rightarrow$ small size of the sketch $\rightarrow$ fast computation, but high number of FPs 
+\end{itemize}
+
+The tightness of the bounds:
+\begin{itemize}
+    \item \emph{lower bound}: tight
+    \item \emph{upper bound}: vary for each aggregate vector, the error is relative to the first norm squared
+\end{itemize}
+    
+\end{block}

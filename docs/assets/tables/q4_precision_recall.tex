@@ -1,0 +1,17 @@
+\begin{threeparttable}[b]
+    \begin{tabular}{c | c c c c}
+        \toprule
+        \textbf{} & \textbf{$\epsilon=0.0001$} & \textbf{$\epsilon=0.001$} & \textbf{$\epsilon=0.002$} & \textbf{$\epsilon=0.01$} \\
+        \midrule
+        \textbf{$\tau \leq 400$} & - & $P=1\tnote{1},R=0/10$ & - & $P=1\tnote{1},R=0/10$ \\
+        \textbf{$\tau \geq 200000$} & $P=1,R=1$ & $P=1/26819,R=1$ & $P=1/91885,R=1$ & $P=1/2573000,R=1$ \\
+        \textbf{$\tau \geq 1000000$} & $P=1\tnote{1},R=1\tnote{2}$ & $P=1\tnote{1},R=1\tnote{2}$ & $P=0/1,R=1\tnote{2}$ & $P=0/91885,R=1\tnote{2}$ \\
+        \bottomrule
+    \end{tabular}
+    \begin{tablenotes}
+            \item [1] Number of TPs is 0, number of FTs is also 0 (eg. 0/0)
+            \item [2] Number of relevant triplets is 0, number of retrieved triplets is also 0 (eg. 0/0)
+       \end{tablenotes}
+\caption{Precision/recall values of the Q4 results.}
+\label{tab:q4-precision-recall}
+\end{threeparttable}

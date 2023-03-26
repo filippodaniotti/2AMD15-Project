@@ -1,0 +1,20 @@
+\begin{algorithm}[H]
+    \label{alg:create_sketch}    
+    \caption{Creates CM sketch from vector.}
+    \DontPrintSemicolon
+    
+    \KwIn{vector[], hash\_functions, $\varepsilon$, $\delta$}
+    \KwOut{sketch[]}
+    \;        
+    $w$ = $\ceil{e / \varepsilon}$,
+    $d$ = $\ceil{\ln 1 / \delta}$\;
+    sketch[] = new Table(size = ($w$, $d$), fill = $0$)\;
+    \For {$i = 0$ to  $10000$}{
+        \For{$j = 0$ to $d$}{
+            index = hash\_functions~$[j](i)$ mod $w$\;
+            sketch[$j$, index] $\leftarrow$ sketch[$j$, index] + vector[$i$]
+        }
+    }
+    \Return sketch
+        
+\end{algorithm}

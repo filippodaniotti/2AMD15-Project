@@ -1,0 +1,13 @@
+\begin{tabular}{l c}
+    \toprule
+    \textbf{Optimization} & \textbf{Execution time} \\
+    \midrule
+    All            & 30.59s     \\
+    No numpy       & 2940.19s   \\
+    No broadcast   & 185.30s    \\ 
+    No accumulator & 36.44s     \\
+    No coalesce    & 131.46s    \\
+    \bottomrule
+\end{tabular}
+\caption{Impact of optimizations tricks on the dataset of size 250x10000, ran locally.}
+\label{tab:q3_local_optimisations}

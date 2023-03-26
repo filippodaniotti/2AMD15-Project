@@ -1,0 +1,15 @@
+\begin{algorithm}[H]
+    \label{alg:merge_and_variance}
+    \caption{Computes aggregate variance.}
+    \DontPrintSemicolon
+
+    \KwIn{sketch\_1, sketch\_2, sketch\_3, $w$}
+    \KwOut{approx\_agg\_var}
+    \;
+    approx\_agg\_var = sketch\_1 + sketch\_2 + sketch\_3\;
+    % \inner = \skAgg $\odot$ \skAgg\;
+    inner\_product = $\sum_{j=1}^{w}$ (approx\_agg\_var$[j]^2$)\;
+    
+    \Return $\frac{1}{10000}$min(inner\_product) $-$ $\mu^2_{\textrm{inner\_product}}$
+
+\end{algorithm}

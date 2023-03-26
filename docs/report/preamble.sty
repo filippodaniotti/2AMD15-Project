@@ -1,0 +1,32 @@
+%%% pachages and settings
+\usepackage[a4paper,margin=1.5cm,top=1.5cm]{geometry}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx,float, wrapfig}
+\usepackage{amssymb,amsmath,amsthm}
+\usepackage[ruled,vlined]{algorithm2e} % pseudocode
+\usepackage{minted} % code blocks
+\usepackage{lmodern}
+\usepackage{todonotes}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\usepackage{threeparttable}
+
+%%% symbols declaration
+\DeclareSymbolFont{yhlargesymbols}{OMX}{yhex}{m}{n}
+\DeclareMathAccent{\yhwidehat}{\mathord}{yhlargesymbols}{"62}
+\DeclareUnicodeCharacter{03C4}{$\tau$}
+
+%%% commands declaration
+\newcommand{\mono}[1]{\verb|#1|}
+\newcommand{\ceil}[1]{\lceil {#1} \rceil}
+\newcommand{\norm}[1]{\lvert\lvert {#1} \rvert\rvert_1}
+\newcommand{\specialcell}[2][c]{%
+\begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+
+%%% math environments
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\renewcommand\qedsymbol{\emph{QED}}

@@ -1,0 +1,112 @@
+\section{Question 4}
+\paragraph{\textbf{Sketch usage, validity and theoretical results}}
+We used \emph{Count-min (CM) sketch} (\cite{cm-sketch}) for representing the original vectors. Specifically, given parameters $(\varepsilon,\delta)$, we create a \emph{CM sketch} with width $w=\ceil{\frac{e}{\varepsilon}}$ and depth $d=\ceil{\ln{\frac{1}{\delta}}}$ for each vector $\mathbf{x}=(x_1,\dots,x_{10000})$. The \emph{CM sketch} is created as follows: the $i$-th element of vector $\mathbf{x}$ is added to the counts on position $[j, h_j(i)]$ in row $j$. Formally,
+\begin{equation}
+    \textrm{count}_\mathbf{x}[j, h_j(i)]=\textrm{count}[j, h_j(i)] + x_i,  \quad 
+    \forall i,  1\leq i\leq 10000 \; \textrm{and} \; \forall j, 1\leq j\leq d 
+\end{equation}
+
+Since every single \emph{CM sketch} is constructed with identical hash functions and parameters, function $h_j$ hash the $i$-th element of vector $\mathbf{x}$ to the same position as the $i$-th element of vector $\mathbf{y}$. Therefore, we can sum the counters of vector triplet $\mathbf{x},\mathbf{y},\mathbf{z}$ pairwise to get a \emph{CM sketch} approximating the aggregate vector $\mathbf{a}=\mathbf{x}+\mathbf{y}+\mathbf{z}$ of that triplet. Formally,
+\begin{equation}
+    \textrm{count}_\mathbf{a}[j, i] = \textrm{count}_\mathbf{x}[j, i] + \textrm{count}_\mathbf{y}[j, i] + \textrm{count}_\mathbf{z}[j, i],  \quad 
+    \forall \mathbf{x}\neq \mathbf{y}\neq \mathbf{z} \; \textrm{and} \;\forall j, 1\leq j\leq d \; \textrm{and} \; \forall j, 1\leq i\leq w
+\end{equation}
+
+Clearly, $\norm{\mathbf{a}}=\norm{\mathbf{x}}+\norm{\mathbf{y}}+\norm{\mathbf{z}}$. The aggregate variance $\sigma^2=\left(\frac{1}{10000}\sum_{i=1}^{10000} a_i^2\right)-\mu_{\mathbf{a}}^2$ can be approximated by the inner product of the \emph{CM sketch} approximating the aggregate vector~$\mathbf{a}$. Specifically, we used $\widehat{(\mathbf{a}\odot\mathbf{a})}$ from the \cite{cm-sketch} paper to approximate the sum of the aggregate vector squared. The aggregate variance can be expressed as follows, 
+
+\begin{equation}
+    \widehat{\sigma}^2=\left(\frac{1}{10000}\widehat{(\mathbf{a}\odot\mathbf{a})}\right)-\mu_{\mathbf{a}}^2
+\end{equation}
+
+\begin{theorem}
+\label{th:cm_var}
+$\sigma^2\leq\widehat{\sigma^2}$ and, with probability $1-\delta$, we have that $\widehat{\sigma^2}\leq\sigma^2 + \frac{1}{10000}\varepsilon\norm{\mathbf{a}}^2$.
+\end{theorem}
+
+\begin{proof}
+From the \textbf{Theorem 3} from the \cite{cm-sketch} paper, $(\mathbf{a}\odot\mathbf{a})\leq\widehat{(\mathbf{a}\odot\mathbf{a})}$ for non-negative vectors. By the definition of $\widehat{\sigma^2}$ and $\sigma^2$,
+
+\begin{equation}
+    \sigma^2=\frac{1}{10000}(\mathbf{a}\odot\mathbf{a})-\mu_{\mathbf{a}}^2\leq\frac{1}{10000}\widehat{(\mathbf{a}\odot\mathbf{a})}-\mu_{\mathbf{a}}^2=\widehat{\sigma^2}    
+\end{equation}
+
+\noindent Therefore, $\sigma^2\leq\widehat{\sigma^2}$ for non-negative vectors. Recalling the definition of $\widehat{\sigma^2}$ and $\sigma^2$,
+\begin{equation}
+    \widehat{\sigma^2} - \sigma^2 = \left(\frac{1}{10000}\widehat{(\mathbf{a}\odot\mathbf{a})}-\mu_{\mathbf{a}}^2\right) - \left(\frac{1}{10000}(\mathbf{a}\odot\mathbf{a})-\mu_{\mathbf{a}}^2\right) = \frac{1}{10000}\left(\widehat{(\mathbf{a}\odot\mathbf{a})} - (\mathbf{a}\odot\mathbf{a})\right)
+\end{equation}
+
+\noindent Therefore,
+\begin{equation}
+    \mathbb{P}\left[\widehat{\sigma^2} - \sigma^2 \geq \frac{1}{10000}\varepsilon\norm{\mathbf{a}}^2\right] = \mathbb{P}\left[\frac{1}{10000}\left(\widehat{(\mathbf{a}\odot\mathbf{a})} - (\mathbf{a}\odot\mathbf{a})\right) \geq \frac{\varepsilon\norm{\mathbf{a}}^2}{10000}\right] = \mathbb{P}\left[\left(\widehat{(\mathbf{a}\odot\mathbf{a})} - (\mathbf{a}\odot\mathbf{a})\right) \geq \varepsilon\norm{\mathbf{a}}^2\right]
+\end{equation}
+
+\noindent From the \textbf{Theorem 3} from the \cite{cm-sketch} paper, $\mathbb{P}\left[\left(\widehat{(\mathbf{a}\odot\mathbf{a})} - (\mathbf{a}\odot\mathbf{a})\right) \geq \varepsilon\norm{\mathbf{a}}^2\right]\leq\delta$. 
+
+\noindent So, $\mathbb{P}\left[\widehat{\sigma^2} - \sigma^2 \geq \frac{1}{10000}\varepsilon\norm{\mathbf{a}}^2\right]\leq\delta$, as required.
+\end{proof}
+
+\begin{corollary}
+Recall that width $w=\ceil{\frac{e}{\varepsilon}}$ and depth $d=\ceil{\ln{\frac{1}{\delta}}}$; that means that the $w$ and $d$ parameters of the sketch can be tweaked in order to achieve the desired $\varepsilon$ and $\delta$ guarantees. It is important to specify that the final size of the sketch will be $w \cdot d$; this size could be bigger than the size of the original problem if $\varepsilon$ and $\delta$ are too strict.
+\end{corollary}
+
+The pseudocode in Alg.\ref{alg:create_sketch} and Alg.\ref{alg:merge_and_variance} illustrates how we approximate the aggregate variance with CM sketches. Note that Alg.\ref{alg:create_sketch} refers on how to create one single sketch for one single vector: this means that such operation can be easily performed in a distributed fashion inside a \mintinline{python}{.map()} procedure, and the same holds for Alg.\ref{alg:merge_and_variance}. They can leverage all the capabilities of Spark, such as variable broadcasting and repartition/coalesce.
+
+\begin{minipage}[t]{.5\textwidth}
+\null 
+    \input{../assets/code/create_sketch}
+\end{minipage}%
+\begin{minipage}[t]{.5\textwidth}
+\null
+    \input{../assets/code/merge_and_variance}
+\end{minipage}
+
+The diagram in Fig.\ref{fig:q4_diagram} summarizes our final system architecture for Question 4.
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=.95\linewidth]{../assets/images/q4_diagram.png}
+    \caption{Brief description of system architecture for Q4}
+    \label{fig:q4_diagram}
+\end{figure}
+
+\begin{itemize}
+    \item \mintinline{python}{Create_sketch}: creates a CM sketch for given $\varepsilon$ and $\delta$ for each vector in the dataset.
+    \item \mintinline{python}{Broadcast}: broadcast a $<\textrm{id}, \textrm{sketch}>$ map over the worker nodes.
+    \item \mintinline{python}{Select_id}: filter the RDD such that the \mintinline{python}{.cartesian()} will be computed only on ids.
+    \item \mintinline{python}{Cartesian}: performs the cartesian product between all the elements in two RDDs; outputs a new RDD of length \mintinline{python}{len(rdd_1)} $\cdot$ \mintinline{python}{len(rdd_2)}.
+    \item \mintinline{python}{Coalesce(number)}: return a new RDD with number of partitions \mintinline{python}{numPartitions}.
+    \item \mintinline{python}{Filter_1}: filters out all tuples where the first element is greater than or equal to the second.
+    \item \mintinline{python}{Filter_2}: filters out all tuples where the second element is greater than or equal to the third.
+    \item \mintinline{python}{Agg_var}: gets the sketches associated with the keys in the tuples from the broadcast variable, estimates the aggregate variance according to Alg.\ref{alg:merge_and_variance} and returns a pair with the keys tuple and the variance. 
+    \item \mintinline{python}{Filter_3}: filters out all variances either greater or smaller than a certain threshold (depending on the functionality).
+\end{itemize}
+
+\paragraph{\textbf{Results and observations}}
+It took \textbf{164.33 seconds} to execute the Q4 on the cluster. The precision/recall values of the results retrieved by our code for Q4 are summarized in Tab.\ref{tab:q4-precision-recall}.
+
+\begin{table}[H]
+  \centering
+  \input{../assets/tables/q4_precision_recall}
+\end{table}
+
+The key to properly reading through the precision/recall values is that, since we are using CM sketches, we are \emph{overestimating} the variance. The impact of the approximation depends on the functionality:
+\begin{itemize}
+    \item \emph{functionality 1}: if we are filtering the variance lower than a threshold, we underestimate the counts (since we overestimate the variance), but all the counts we detect will be TPs, hence we expect precision to be 1;
+    \item \emph{functionality 2}: if we are filtering the variance higher than a threshold, we overestimate the counts, hence we will get FPs but no FNs, which provides us with a recall value of 1.
+\end{itemize}
+Similarly, we can determine how the parameters $\varepsilon$ and $\delta$ affect the precision and recall values.
+\begin{itemize}
+    \item Smaller values of $\varepsilon$ imply larger values of width $w$ for the sketch, which ensure fewer collisions and therefore a better approximation of the aggregate variance, resulting in higher recall for \emph{functionality 1} and higher precision for \emph{functionality 2}; the results shown in Tab.\ref{tab:q4-precision-recall} confirm indeed this observation.
+    \item Similarly, smaller values $\delta$ imply a larger number $d$ of hash functions, which also mitigates the overestimation of the variance and ultimately ensures higher recall for \emph{functionality 1} and higher precision for \emph{functionality 2}.
+\end{itemize}
+
+The main thing to consider when talking about the usefulness of a sketch is the dimension of the sketches. The configuration $\varepsilon = 0.0001$ for \emph{functionality 2} produces a \emph{CM sketch} with over $27.000$ columns, which is larger than the size of the original vectors. Even though the results for such configuration are $P=1$ and $R=1$, the computation would be much slower than the computation of the exact solution 
+and it still wouldn't ensure the correct results (because of the possibility of collisions). However, $\varepsilon = 0.01$ is not good either, as it produces a very high number of FPs. Using the two intermediate values $\varepsilon = 0.001$ and $\varepsilon = 0.002$ make sense, as they ensure a reduced size of the dataset while retaining a reasonable approximation of the results. Moreover, if the number of FPs is small enough, one could also compute the variance of each of the results and manually discard the FPs; this may take less time than computing an exact solution.
+
+It is not advisable to use this sketch for \emph{functionality 1}: from our experiments, we could see that $\varepsilon = 0.001$ is not enough for obtaining any results. In order to improve the approximation we would need to reduce the value of $\varepsilon$, but this might result in a sketch larger than the original dataset.
+
+Ultimately, we are presenting some concluding remarks on the tightness of the bounds.
+\begin{itemize}
+    \item \textbf{Lower bound}. The lower bound is tight, as the estimated value is never less than the actual value.
+    \item \textbf{Upper bound}. From Theorem~\ref{th:cm_var}, we can see that the upper bound depends on $\varepsilon$, $\delta$ and $\norm{\mathbf{a}}^2$; the latter dependence implies that the upper bound will be different for each aggregate vector and that the error is relative to the first norm squared. This is unfortunate, as it means that we can fine-tune $\varepsilon$ and $\delta$, but the tightness will inherently have some variability introduced by the varying sum of the elements of the aggregate vectors.
+\end{itemize}

@@ -1,0 +1,44 @@
+\begin{block}{Question 2}
+    
+SQL query for Question 2:
+\begin{center}
+    \inputminted[]{sql}{../assets/code/q2.sql}
+\end{center}
+    
+\begin{columns}
+    \begin{column}{.45\linewidth}
+        \textbf{Optimization techniques:}
+        \begin{itemize}
+            \item Fine-tuning the usage of partitions
+            \item Broadcast <id, vector> map to reduce network consumption
+            \item Usage of \mintinline{python}{numpy.ndarray}s with 16 bits integers
+        \end{itemize}
+    \end{column}
+    \begin{column}{.45\linewidth}
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=.85\linewidth]{../assets/images/q2_results.png}
+            \caption{Triples with aggregate variance $ \le \tau$}
+            \label{fig:q2_results}
+        \end{figure}
+    \end{column}
+\end{columns}
+
+\begin{columns}
+    \begin{column}{.45\linewidth}
+        \begin{table}[H]
+            \centering
+            \input{../assets/tables/q2_optimization}
+        \end{table}
+    \end{column}
+    \begin{column}{.45\linewidth}
+        \begin{table}[H]
+            \centering
+            \input{../assets/tables/q2_partitions}
+        \end{table}
+    \end{column}
+\end{columns}
+    
+\end{block}
+
+  

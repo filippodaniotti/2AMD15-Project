@@ -1,0 +1,39 @@
+\begin{block}{Question 3}
+
+System architecture for Question 3:
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=.95\linewidth]{../assets/images/q3_diagram.png}
+    \caption{Brief description of system architecture for Q3}
+    \label{fig:q3_diagram}
+\end{figure}
+
+\textbf{Optimization techniques:}
+
+\begin{itemize}
+    \item Fine-tuning the usage of partitions
+    \item Broadcast <id, vector> map to reduce network consumption
+    \item Usage of \mintinline{python}{numpy.ndarray}s with 16 bits integers
+    \item Usage of \mintinline{python}{.Accumulator()} API 
+    \item Caching filtered triples with $var \le 410$ before filtering again for $var \le 20$ \emph{(discarded)}
+    \item Pre-computing the mean of each vector to speed up \mintinline{python}{statistics.pvariance()} \emph{(discarded)}
+\end{itemize}
+
+\begin{columns}
+    \begin{column}{.5\textwidth}
+        \begin{table}[!h]
+            \centering
+            \input{../assets/tables/q3_local_optimization.tex}
+        \end{table}
+    \end{column}
+    
+    \begin{column}{.5\textwidth}
+        \begin{table}[!h]
+            \centering
+            \input{../assets/tables/q3_server_optimization.tex}
+        \end{table}
+    \end{column}
+\end{columns}
+    
+\end{block}

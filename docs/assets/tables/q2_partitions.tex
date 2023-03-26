@@ -1,0 +1,13 @@
+\begin{tabular}{l c}
+    \toprule
+    \textbf{Partitions} & \textbf{Execution time} \\
+    \midrule
+    32-64-128     & 237.11s    \\ 
+    16-32-64      & 246.13s    \\ 
+    64-128-256    & 295.03s    \\
+    64-64-64      & 323.13s    \\
+    \bottomrule
+\end{tabular}
+\makeatletter\def\@captype{table}\makeatother% "Change float to table"
+\caption{Impact of partition combinations on the dataset of size 250x10000, ran on the server.}
+\label{tab:q2_partitions}

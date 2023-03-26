@@ -1,0 +1,41 @@
+\begin{block}{Ethical and other aspects}
+
+% Depending on the actual size of the company, our employed technique would differ. From our tests we've seen that these types of computing problems are memory and CPU dependent. Furthermore, due to security constraints we avoid any cloud hosting clusters. Taking these into account, we chose the following two options:
+
+% \begin{itemize}
+%     \item\textbf{c)} Spark, on a company owned server. We consider this strategy, because we've seen that Spark can be easily scaled and programmed with both Java and Python APIs.
+%     \item\textbf{e)} An approximation technique, similar to the solution of Q4, but running on a powerful server. In this situation the most important parameters that we have to look for are $\epsilon$ and $\delta$. If by "powerful server" it means that there are no restrictions on the CPU and memory usage, then $\epsilon$ and $\delta$ should be asymptotically small thus generating higher precision and recall for the employed sketches.
+% \end{itemize}
+
+% In order to decide the appropriate technique, we would consider the following:
+% \begin{enumerate}
+%     \item size of the problem
+%     \item precision/recall requirements of the company
+%     \item hardware availability of the company
+%     \item sensitivity of the data/context
+% \end{enumerate}
+
+\begin{itemize}
+    \item \emph{Relational databases} should be employed if the size of the problem is small, because:
+    \begin{itemize}
+        \item they are more widely known (thus maintainable)
+        \item no need to add complexity if the problem is small
+    \end{itemize}
+    \item \emph{Multi-threaded programs} should be avoided, because:
+    \begin{itemize}
+        \item it does not provide developers with any advantage over Spark
+        \item Spark provides users with better scalability
+    \end{itemize}
+    \item \emph{Company-owned cluster vs. cloud resources} - the choice is a trade-off between:
+    \begin{itemize}
+        \item hardware/resources availability of the company
+        \item sensitivity of the data/context
+    \end{itemize}
+    \item \emph{Spark vs. approximation technique} - the choice depends on:
+    \begin{itemize}
+        \item hardware/resources availability of the company
+        \item precision/recall requirements of the company for the problem
+    \end{itemize}
+\end{itemize}
+
+\end{block}
