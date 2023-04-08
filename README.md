@@ -1,6 +1,6 @@
 # Distributed Aggregate Variance
 
-This repo contains the code and documentation for the project of the course *2AMD15 - Big Datamanagement* held at TU/e by Prof. Odysseas Papapetrou during the AA 2022/2023
+This repo contains the code and documentation for the project of the course *2AMD15 - Big Data Management* held at TU/e by Prof. Odysseas Papapetrou during the AY 2022/2023
 
 The goal of the project is to use the Spark platform to discover interesting combinations of vectors from a large dataset in a cloud distributed setting, more details in the [problem description](docs/2022-23%202AMD15%20project.pdf)
 
